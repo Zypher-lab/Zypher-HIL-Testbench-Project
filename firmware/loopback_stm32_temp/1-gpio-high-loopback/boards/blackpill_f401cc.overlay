@@ -1,0 +1,7 @@
+/ {
+    zephyr,user {
+        tb-out-gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+        dut-in-gpios = <&gpioa 1 GPIO_ACTIVE_HIGH>;
+    };
+
+};

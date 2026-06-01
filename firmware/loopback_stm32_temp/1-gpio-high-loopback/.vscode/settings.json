@@ -1,0 +1,27 @@
+{
+    "ROS2.distro": "humble",
+    "python.autoComplete.extraPaths": [
+        "/home/abdo/ros2_ws/install/simple_turtle_patrol/local/lib/python3.10/dist-packages",
+        "/home/abdo/ros2_ws/build/my_sensor_station",
+        "/home/abdo/ros2_ws/install/my_sensor_station/lib/python3.10/site-packages",
+        "/home/abdo/ros2_ws/build/my_python_pkg",
+        "/home/abdo/ros2_ws/install/my_python_pkg/lib/python3.10/site-packages",
+        "/home/abdo/ros2_ws/build/lab01_python_pkg",
+        "/home/abdo/ros2_ws/install/lab01_python_pkg/lib/python3.10/site-packages",
+        "/home/abdo/ros2_ws/install/lab01/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/abdo/ros2_ws/install/simple_turtle_patrol/local/lib/python3.10/dist-packages",
+        "/home/abdo/ros2_ws/build/my_sensor_station",
+        "/home/abdo/ros2_ws/install/my_sensor_station/lib/python3.10/site-packages",
+        "/home/abdo/ros2_ws/build/my_python_pkg",
+        "/home/abdo/ros2_ws/install/my_python_pkg/lib/python3.10/site-packages",
+        "/home/abdo/ros2_ws/build/lab01_python_pkg",
+        "/home/abdo/ros2_ws/install/lab01_python_pkg/lib/python3.10/site-packages",
+        "/home/abdo/ros2_ws/install/lab01/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}
