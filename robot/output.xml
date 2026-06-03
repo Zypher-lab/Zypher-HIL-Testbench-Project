@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.10.12 on linux)" generated="2026-06-01T11:39:09.084323" rpa="false" schemaversion="5">
+<suite id="s1" name="Pwm Tests" source="/home/abdo/projects/Arm_stm32/ITI-EmbeddedAK/testbench/robot/test_suites/pwm_tests.robot">
+<kw name="Open Bench" owner="serial_lib" type="SETUP">
+<arg>${CONFIG}</arg>
+<status status="PASS" start="2026-06-01T11:39:09.099567" elapsed="0.001037"/>
+</kw>
+<test id="s1-t1" name="PWM 50Hz 90 Duty" line="12">
+<kw name="Send Command" owner="serial_lib">
+<msg time="2026-06-01T11:39:09.187166" level="INFO">${resp} = OK</msg>
+<var>${resp}</var>
+<arg>SET:PWM:PA8:50:90|ASSERT:PWM:PB10:50:90|TIMEOUT:2000</arg>
+<status status="PASS" start="2026-06-01T11:39:09.100845" elapsed="0.086426"/>
+</kw>
+<kw name="Response Should Be Ok" owner="serial_lib">
+<arg>${resp}</arg>
+<status status="PASS" start="2026-06-01T11:39:09.187667" elapsed="0.000351"/>
+</kw>
+<status status="PASS" start="2026-06-01T11:39:09.100674" elapsed="0.087638"/>
+</test>
+<test id="s1-t2" name="PWM 100Hz 50 Duty" line="16">
+<kw name="Send Command" owner="serial_lib">
+<msg time="2026-06-01T11:39:09.257141" level="INFO">${resp} = OK</msg>
+<var>${resp}</var>
+<arg>SET:PWM:PA8:100:50|ASSERT:PWM:PB10:100:50|TIMEOUT:2000</arg>
+<status status="PASS" start="2026-06-01T11:39:09.189146" elapsed="0.068114"/>
+</kw>
+<kw name="Response Should Be Ok" owner="serial_lib">
+<arg>${resp}</arg>
+<status status="PASS" start="2026-06-01T11:39:09.257882" elapsed="0.000531"/>
+</kw>
+<status status="PASS" start="2026-06-01T11:39:09.188651" elapsed="0.070114"/>
+</test>
+<test id="s1-t3" name="PWM 1000Hz 10 Duty" line="20">
+<kw name="Send Command" owner="serial_lib">
+<msg time="2026-06-01T11:39:09.318168" level="INFO">${resp} = OK</msg>
+<var>${resp}</var>
+<arg>SET:PWM:PA8:1000:10|ASSERT:PWM:PB10:1000:10|TIMEOUT:2000</arg>
+<status status="PASS" start="2026-06-01T11:39:09.259845" elapsed="0.058447"/>
+</kw>
+<kw name="Response Should Be Ok" owner="serial_lib">
+<arg>${resp}</arg>
+<status status="PASS" start="2026-06-01T11:39:09.318714" elapsed="0.000410"/>
+</kw>
+<status status="PASS" start="2026-06-01T11:39:09.259191" elapsed="0.060271"/>
+</test>
+<kw name="Close Bench" owner="serial_lib" type="TEARDOWN">
+<status status="PASS" start="2026-06-01T11:39:09.320596" elapsed="0.103338"/>
+</kw>
+<status status="PASS" start="2026-06-01T11:39:09.084800" elapsed="0.339292"/>
+</suite>
+<statistics>
+<total>
+<stat pass="3" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Pwm Tests" id="s1" pass="3" fail="0" skip="0">Pwm Tests</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

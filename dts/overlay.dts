@@ -1,0 +1,48 @@
+/*
+ * Testbench overlay — STM32F401CC Black Pill
+ *
+ * PA8  — TIM1 CH1 — PWM output
+ * PB10 — TIM2 CH3 — PWM capture
+ * PA9  — USART1 TX (already in board file)
+ * PA10 — USART1 RX (already in board file)
+ */
+
+#include <st/f4/stm32f401ccfx-pinctrl.dtsi>
+
+/ {
+    chosen {
+        zephyr,console    = &usart1;
+        zephyr,shell-uart = &usart1;
+    };
+};
+
+/* ─── TIM1 — PWM output on PA8 (CH1) ────────────────────────────────────── */
+&timers1 {
+    status = "okay";
+    st,prescaler = <83>;
+
+    pwm1: pwm {
+        status = "okay";
+        pinctrl-0 = <&tim1_ch1_pa8>;
+        pinctrl-names = "default";
+        #pwm-cells = <3>;
+    };
+};
+
+/* ─── TIM2 — PWM capture on PB10 (CH3) ──────────────────────────────────── */
+&timers2 {
+    status = "okay";
+    st,prescaler = <83>;
+
+    pwm2: pwm {
+        status = "okay";
+        pinctrl-0 = <&tim2_ch3_pb10>;
+        pinctrl-names = "default";
+        #pwm-cells = <3>;
+
+        /* PB10 is TIM2_CH3. Default STM32 slave-mode capture only
+         * works on CH1/CH2, so capturing on CH3 needs four-channel
+         * mode (counter reset by IRQ instead of slave controller). */
+        four-channel-capture-support;
+    };
+};
