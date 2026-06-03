@@ -1,0 +1,28 @@
+# VS Code local settings
+.vscode/
+
+# Zephyr build outputs
+build/
+build-*/
+twister-out/
+zephyr/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Robot Framework generated reports
+log.html
+report.html
+output.xml
+robot_tests/log.html
+robot_tests/report.html
+robot_tests/output.xml
+
+# Virtual environments
+.venv/
+venv/
+
+# Temporary files
+*.log
+PIPE
