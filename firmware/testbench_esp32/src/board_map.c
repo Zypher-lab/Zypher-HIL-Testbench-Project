@@ -15,9 +15,21 @@ static const board_gpio_channel_t gpio_channels[] = {
         .pin = 27,
         .direction = BOARD_GPIO_OUTPUT,
     },
+
+    {
+        .name = "DIO_OUT2",
+        .pin = 13,
+        .direction = BOARD_GPIO_OUTPUT,
+    },
     {
         .name = "DIO_IN1",
         .pin = 14,
+        .direction = BOARD_GPIO_INPUT,
+    },
+
+    {
+        .name = "DIO_IN2",
+        .pin = 22,
         .direction = BOARD_GPIO_INPUT,
     },
 };
@@ -32,4 +44,15 @@ bool board_map_get_gpio_channel(const char *name, board_gpio_channel_t *out_chan
     }
 
     return false;
+}
+
+
+const board_gpio_channel_t *board_map_get_gpio_channels(void)
+{
+    return gpio_channels;
+}
+
+size_t board_map_get_gpio_channel_count(void)
+{
+    return sizeof(gpio_channels) / sizeof(gpio_channels[0]);
 }

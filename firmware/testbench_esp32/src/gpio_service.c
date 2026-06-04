@@ -4,33 +4,42 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-
+#include <stddef.h>
 #define ESP32_GPIO_NODE DT_NODELABEL(gpio0)
 
 static const struct device *gpio0_dev = DEVICE_DT_GET(ESP32_GPIO_NODE);
 
 int gpio_service_init(void)
 {
-    if (!device_is_ready(gpio0_dev)) {
+    if (!device_is_ready(gpio0_dev))
+    {
         return -1;
     }
 
-    board_gpio_channel_t channel;
+    const board_gpio_channel_t *channels = board_map_get_gpio_channels();
+    size_t channel_count = board_map_get_gpio_channel_count();
 
-    if (!board_map_get_gpio_channel("DIO_OUT1", &channel)) {
-        return -1;
-    }
+    for (size_t i = 0; i < channel_count; i++)
+    {
+        int ret;
 
-    if (gpio_pin_configure(gpio0_dev, channel.pin, GPIO_OUTPUT_INACTIVE) < 0) {
-        return -1;
-    }
+        if (channels[i].direction == BOARD_GPIO_OUTPUT)
+        {
+            ret = gpio_pin_configure(gpio0_dev,
+                                     channels[i].pin,
+                                     GPIO_OUTPUT_INACTIVE);
+        }
+        else
+        {
+            ret = gpio_pin_configure(gpio0_dev,
+                                     channels[i].pin,
+                                     GPIO_INPUT | GPIO_PULL_DOWN);
+        }
 
-    if (!board_map_get_gpio_channel("DIO_IN1", &channel)) {
-        return -1;
-    }
-
-    if (gpio_pin_configure(gpio0_dev, channel.pin, GPIO_INPUT | GPIO_PULL_DOWN) < 0) {
-        return -1;
+        if (ret < 0)
+        {
+            return -1;
+        }
     }
 
     return 0;
@@ -40,11 +49,13 @@ bool gpio_service_write(const char *channel_name, int value)
 {
     board_gpio_channel_t channel;
 
-    if (!board_map_get_gpio_channel(channel_name, &channel)) {
+    if (!board_map_get_gpio_channel(channel_name, &channel))
+    {
         return false;
     }
 
-    if (channel.direction != BOARD_GPIO_OUTPUT) {
+    if (channel.direction != BOARD_GPIO_OUTPUT)
+    {
         return false;
     }
 
@@ -57,13 +68,15 @@ bool gpio_service_read(const char *channel_name, int *out_value)
 {
     board_gpio_channel_t channel;
 
-    if (!board_map_get_gpio_channel(channel_name, &channel)) {
+    if (!board_map_get_gpio_channel(channel_name, &channel))
+    {
         return false;
     }
 
     int value = gpio_pin_get_raw(gpio0_dev, channel.pin);
 
-    if (value < 0) {
+    if (value < 0)
+    {
         return false;
     }
 
@@ -80,14 +93,17 @@ bool gpio_service_expect(const char *channel_name,
     int elapsed_ms = 0;
     int actual = 0;
 
-    while (elapsed_ms <= timeout_ms) {
-        if (!gpio_service_read(channel_name, &actual)) {
+    while (elapsed_ms <= timeout_ms)
+    {
+        if (!gpio_service_read(channel_name, &actual))
+        {
             return false;
         }
 
         *out_actual = actual;
 
-        if (actual == (expected ? 1 : 0)) {
+        if (actual == (expected ? 1 : 0))
+        {
             return true;
         }
 
