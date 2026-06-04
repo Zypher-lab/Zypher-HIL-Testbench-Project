@@ -26,3 +26,9 @@ venv/
 # Temporary files
 *.log
 PIPE
+
+# Robot Framework reports directory generated files
+reports/*.html
+reports/*.xml
+reports/*.log
+!reports/.gitkeep
