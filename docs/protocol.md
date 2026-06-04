@@ -94,8 +94,8 @@ Robot Framework uses logical resource names instead of physical pin numbers.
 
 | Resource  | ESP32 Pin | Direction | Purpose                           |
 | --------- | --------- | --------- | --------------------------------- |
-| DIO_OUT1  | GPIO32    | Output    | Simulated digital input to DUT    |
-| DIO_IN1   | GPIO33    | Input     | Digital output monitored from DUT |
+| DIO_OUT1  | GPIO27    | Output    | Simulated digital input to DUT    |
+| DIO_IN1   | GPIO14    | Input     | Digital output monitored from DUT |
 | DAC_OUT1  | GPIO25    | Output    | Analog stimulus to DUT ADC        |
 | DIO_IN2   | GPIO34    | Input     | Warning/status monitor from DUT   |
 | UART1_TX  | GPIO17    | Output    | UART TX to DUT                    |
