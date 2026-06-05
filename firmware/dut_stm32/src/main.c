@@ -3,6 +3,7 @@
 
 #include "dio_app.h"
 #include "adc_app.h"
+#include "uart_app.h"
 
 int main(void)
 {
@@ -18,9 +19,15 @@ int main(void)
         return 0;
     }
 
+    if (uart_app_init() != 0) {
+        printk("ERROR: UART app init failed\n");
+        return 0;
+    }
+
     while (1) {
         dio_app_update();
         adc_app_update();
+        uart_app_update();
 
         k_msleep(10);
     }

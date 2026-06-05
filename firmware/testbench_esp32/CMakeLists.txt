@@ -11,4 +11,5 @@ target_sources(app PRIVATE
     src/gpio_service.c
     src/board_map.c
     src/dac_service.c
+    src/uart_service.c
 )

@@ -10,16 +10,16 @@ All boards must share a common ground.
 
 ```text
 ESP32 GND -> STM32 GND
-````
+```
 
 ---
 
 ## DIO E2E Wiring
 
-| ESP32 Testbench Resource | ESP32 Pin | STM32 DUT Pin | Direction      | Purpose                |
-| ------------------------ | --------- | ------------- | -------------- | ---------------------- |
-| DIO_OUT1                 | GPIO27    | PB0           | ESP32 -> STM32 | Simulated button/input |
-| DIO_IN1                  | GPIO14    | PB1           | STM32 -> ESP32 | DUT LED/output monitor |
+| ESP32 Testbench Resource | ESP32 Pin | STM32 DUT Pin | Direction | Purpose |
+|---|---|---|---|---|
+| DIO_OUT1 | GPIO27 | PB0 | ESP32 -> STM32 | Simulated button/input |
+| DIO_IN1 | GPIO14 | PB1 | STM32 -> ESP32 | DUT LED/output monitor |
 
 DUT behavior:
 
@@ -35,18 +35,19 @@ PB0 HIGH -> PB1 HIGH
 For ESP32-only DIO resource validation:
 
 | Output Resource | ESP32 Output Pin | Input Resource | ESP32 Input Pin |
-| --------------- | ---------------- | -------------- | --------------- |
-| DIO_OUT1        | GPIO27           | DIO_IN1        | GPIO14          |
-| DIO_OUT2        | GPIO13           | DIO_IN2        | GPIO22          |
+|---|---|---|---|
+| DIO_OUT1 | GPIO27 | DIO_IN1 | GPIO14 |
+| DIO_OUT2 | GPIO13 | DIO_IN2 | GPIO22 |
 
 ---
 
 ## ADC E2E Wiring
 
-| ESP32 Testbench Resource | ESP32 Pin | STM32 DUT Pin | Direction      | Purpose                      |
-| ------------------------ | --------- | ------------- | -------------- | ---------------------------- |
-| DAC_OUT1                 | GPIO25    | PA0           | ESP32 -> STM32 | Analog stimulus to STM32 ADC |
-| DIO_IN2                  | GPIO22    | PB5           | STM32 -> ESP32 | ADC warning output monitor   |
+| ESP32 Testbench Resource | ESP32 Pin | STM32 DUT Pin | Direction | Purpose |
+|---|---|---|---|---|
+| DAC_OUT1 | GPIO25 | PA0 | ESP32 -> STM32 | Analog stimulus to STM32 ADC |
+| DAC_OUT2 | GPIO26 | PA0 | ESP32 -> STM32 | Alternative analog stimulus to STM32 ADC |
+| DIO_IN2 | GPIO22 | PB5 | STM32 -> ESP32 | ADC warning output monitor |
 
 DUT behavior:
 
@@ -64,14 +65,38 @@ Approximately around 1.5V on a 12-bit 3.3V ADC scale
 
 ---
 
+## UART E2E Wiring
+
+| ESP32 Testbench Resource | ESP32 Pin | STM32 DUT Pin | Direction | Purpose |
+|---|---|---|---|---|
+| UART_CH1 TX | GPIO17 / TXD2 | PA3 / USART2_RX | ESP32 -> STM32 | UART request to DUT |
+| UART_CH1 RX | GPIO16 / RXD2 | PA2 / USART2_TX | STM32 -> ESP32 | UART response from DUT |
+
+UART wiring rule:
+
+```text
+ESP32 TX -> STM32 RX
+ESP32 RX <- STM32 TX
+ESP32 GND -> STM32 GND
+```
+
+Validated DUT behavior:
+
+```text
+PING  -> PONG
+HELLO -> ACK
+```
+
+---
+
 ## ST-Link Wiring for STM32 Flashing
 
-| ST-Link    | STM32 |
-| ---------- | ----- |
-| SWDIO      | PA13  |
-| SWCLK      | PA14  |
-| GND        | GND   |
-| 3.3V / VCC | 3.3V  |
-| NRST       | NRST  |
+| ST-Link | STM32 |
+|---|---|
+| SWDIO | PA13 |
+| SWCLK | PA14 |
+| GND | GND |
+| 3.3V / VCC | 3.3V |
+| NRST | NRST |
 
 NRST is required for reliable flashing with OpenOCD.
