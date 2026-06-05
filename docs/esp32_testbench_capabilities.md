@@ -2,7 +2,7 @@
 
 This document defines the logical resources exposed by the ESP32 testbench firmware.
 
-Robot Framework must use logical resource names such as `DIO_OUT1` or `DAC_OUT1`, not physical GPIO numbers.
+Robot Framework must use logical resource names such as `DIO_OUT1`, `DAC_OUT1`, or `UART_CH1`, not physical GPIO numbers.
 The physical pin mapping is owned by the ESP32 testbench firmware.
 
 ---
@@ -17,6 +17,7 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 | DIO_IN2 | Digital GPIO | Input | GPIO22 | Digital monitor input 2 |
 | DAC_OUT1 | DAC | Output | GPIO25 | Analog voltage stimulus output 1 |
 | DAC_OUT2 | DAC | Output | GPIO26 | Analog voltage stimulus output 2 |
+| UART_CH1 | UART | TX/RX | GPIO17 TXD2 / GPIO16 RXD2 | UART E2E communication channel |
 
 ---
 
@@ -37,6 +38,27 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 | DAC_OUT2 | GPIO26 | STM32 PA0 ADC_IN | Passed |
 | DIO_IN2 | GPIO22 | STM32 PB5 WARNING_OUT | Passed |
 
+### UART
+
+| Resource | ESP32 Pins | Connected DUT Pins | Result |
+|---|---|---|---|
+| UART_CH1 | GPIO17 TXD2 / GPIO16 RXD2 | STM32 PA3 USART2_RX / PA2 USART2_TX | Passed |
+
+Validated UART behavior:
+
+```text
+PING  -> PONG
+HELLO -> ACK
+```
+
+Validated UART commands:
+
+```text
+UART_WRITE
+UART_READ
+UART_SEND_EXPECT
+```
+
 ---
 
 ## Reserved Pins
@@ -46,7 +68,7 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 | GPIO1 / GPIO3 | USB serial, flashing, console, and ZTB protocol |
 | GPIO25 | DAC_OUT1 analog stimulus |
 | GPIO26 | DAC_OUT2 analog stimulus |
-| GPIO16 / GPIO17 | Reserved for UART test interface |
+| GPIO16 / GPIO17 | UART_CH1 |
 | GPIO18 / GPIO19 / GPIO21 / GPIO23 | Reserved for SPI test interface |
 | GPIO6 - GPIO11 | Usually connected to internal SPI flash |
 | GPIO0 / GPIO2 / GPIO5 / GPIO12 / GPIO15 | Boot strapping pins; avoid unless validated |
@@ -60,4 +82,5 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 - Robot Framework communicates only with the ESP32 over USB serial.
 - STM32 is treated as the DUT and reacts only to physical signals.
 - The ESP32 testbench firmware is generic and executes ZTB protocol commands.
-- `DAC_OUT1` uses the real ESP32 DAC driver enabled through `app.overlay`.
+- `DAC_OUT1` and `DAC_OUT2` use the real ESP32 DAC driver enabled through `app.overlay`.
+- `UART_CH1` uses ESP32 UART2 and is kept separate from USB serial UART0.
