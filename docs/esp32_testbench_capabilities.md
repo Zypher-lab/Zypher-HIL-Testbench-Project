@@ -15,7 +15,8 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 | DIO_OUT2 | Digital GPIO | Output | GPIO13 | Digital stimulus output 2 |
 | DIO_IN1 | Digital GPIO | Input | GPIO14 | Digital monitor input 1 |
 | DIO_IN2 | Digital GPIO | Input | GPIO22 | Digital monitor input 2 |
-| DAC_OUT1 | DAC | Output | GPIO25 | Analog voltage stimulus output |
+| DAC_OUT1 | DAC | Output | GPIO25 | Analog voltage stimulus output 1 |
+| DAC_OUT2 | DAC | Output | GPIO26 | Analog voltage stimulus output 2 |
 
 ---
 
@@ -33,6 +34,7 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 | Resource | ESP32 Pin | Connected DUT Pin | Result |
 |---|---|---|---|
 | DAC_OUT1 | GPIO25 | STM32 PA0 ADC_IN | Passed |
+| DAC_OUT2 | GPIO26 | STM32 PA0 ADC_IN | Passed |
 | DIO_IN2 | GPIO22 | STM32 PB5 WARNING_OUT | Passed |
 
 ---
@@ -43,7 +45,7 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 |---|---|
 | GPIO1 / GPIO3 | USB serial, flashing, console, and ZTB protocol |
 | GPIO25 | DAC_OUT1 analog stimulus |
-| GPIO26 | Reserved for future DAC_OUT2 |
+| GPIO26 | DAC_OUT2 analog stimulus |
 | GPIO16 / GPIO17 | Reserved for UART test interface |
 | GPIO18 / GPIO19 / GPIO21 / GPIO23 | Reserved for SPI test interface |
 | GPIO6 - GPIO11 | Usually connected to internal SPI flash |
