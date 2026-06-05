@@ -10,4 +10,5 @@ target_sources(app PRIVATE
     src/test_executor.c
     src/gpio_service.c
     src/board_map.c
+    src/dac_service.c
 )

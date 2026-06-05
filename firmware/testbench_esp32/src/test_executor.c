@@ -1,10 +1,16 @@
 #include "test_executor.h"
 #include "gpio_service.h"
+#include "dac_service.h"
+
+
+static void execute_dac_write(const ztb_command_t *command,
+                              ztb_response_t *response);
 
 static void execute_gpio_write(const ztb_command_t *command,
                                ztb_response_t *response)
 {
-    if (!gpio_service_write(command->ch, command->val)) {
+    if (!gpio_service_write(command->ch, command->val))
+    {
         ztb_make_fail_response(response, command->seq, "GPIO_WRITE_FAILED");
         return;
     }
@@ -17,7 +23,8 @@ static void execute_gpio_read(const ztb_command_t *command,
 {
     int value = 0;
 
-    if (!gpio_service_read(command->ch, &value)) {
+    if (!gpio_service_read(command->ch, &value))
+    {
         ztb_make_fail_response(response, command->seq, "GPIO_READ_FAILED");
         return;
     }
@@ -45,7 +52,8 @@ static void execute_gpio_expect(const ztb_command_t *command,
 void test_executor_execute(const ztb_command_t *command,
                            ztb_response_t *response)
 {
-    switch (command->cmd) {
+    switch (command->cmd)
+    {
     case ZTB_CMD_GPIO_WRITE:
         execute_gpio_write(command, response);
         break;
@@ -57,9 +65,24 @@ void test_executor_execute(const ztb_command_t *command,
     case ZTB_CMD_GPIO_EXPECT:
         execute_gpio_expect(command, response);
         break;
+    case ZTB_CMD_DAC_WRITE:
+        execute_dac_write(command, response);
+        break;
 
     default:
         ztb_make_fail_response(response, command->seq, "UNKNOWN_COMMAND");
         break;
     }
+}
+
+static void execute_dac_write(const ztb_command_t *command,
+                              ztb_response_t *response)
+{
+    if (!dac_service_write_mv(command->ch, command->mv))
+    {
+        ztb_make_fail_response(response, command->seq, "DAC_WRITE_FAILED");
+        return;
+    }
+
+    ztb_make_ok_response(response, command->seq);
 }

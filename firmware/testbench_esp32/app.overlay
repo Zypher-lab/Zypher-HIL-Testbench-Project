@@ -1,0 +1,3 @@
+&dac {
+    status = "okay";
+};
