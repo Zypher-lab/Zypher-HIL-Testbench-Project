@@ -15,3 +15,9 @@ Expect GPIO Value
     Response Field Should Equal    ${response}    expected    ${value}
     Response Field Should Equal    ${response}    actual    ${value}
     RETURN    ${response}
+
+Write DAC Voltage
+    [Arguments]    ${seq}    ${channel}    ${mv}
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=DAC_WRITE|ch=${channel}|mv=${mv}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}

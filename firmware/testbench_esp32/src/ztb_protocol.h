@@ -10,6 +10,7 @@ typedef enum
     ZTB_CMD_GPIO_WRITE,
     ZTB_CMD_GPIO_READ,
     ZTB_CMD_GPIO_EXPECT,
+    ZTB_CMD_DAC_WRITE,
 } ztb_command_type_t;
 
 typedef enum
@@ -20,6 +21,7 @@ typedef enum
 
 typedef struct
 {
+    int mv;
     int seq;
     ztb_command_type_t cmd;
     char ch[24];
