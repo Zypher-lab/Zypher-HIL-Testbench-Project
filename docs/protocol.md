@@ -85,6 +85,7 @@ Set an analog voltage using ESP32 DAC output.
 
 ```text
 ZTB|seq=4|cmd=DAC_WRITE|ch=DAC_OUT1|mv=2500
+ZTB|seq=5|cmd=DAC_WRITE|ch=DAC_OUT2|mv=2500
 ```
 
 Example response:
