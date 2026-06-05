@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr HIL Testbench Project Plan</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --red: #f87171;
+      --border: #374151;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      width: min(1200px, 94%);
+      margin: auto;
+      padding: 32px 0 80px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      color: var(--accent);
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      color: white;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 900px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 22px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .card {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+      margin: 3px 4px 3px 0;
+      color: #020617;
+      background: var(--accent);
+    }
+
+    .tag.green { background: var(--green); }
+    .tag.yellow { background: var(--yellow); }
+    .tag.red { background: var(--red); }
+
+    code, pre {
+      background: #020617;
+      color: #d1d5db;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    code {
+      padding: 2px 6px;
+    }
+
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #020617;
+      color: white;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      background: #0b1120;
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .warning {
+      border-left: 4px solid var(--yellow);
+      padding: 12px 16px;
+      background: #1c1917;
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .success {
+      border-left: 4px solid var(--green);
+      padding: 12px 16px;
+      background: #052e16;
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Zephyr HIL Testbench Project Plan</h1>
+      <p class="subtitle">
+        A practical plan for building a mini Hardware-in-the-Loop testing system using
+        Robot Framework, Python, Zephyr RTOS, ESP32 as the testbench, and STM32 as the DUT.
+      </p>
+      <div>
+        <span class="tag">Robot Framework</span>
+        <span class="tag">Python</span>
+        <span class="tag">Zephyr RTOS</span>
+        <span class="tag">ESP32 DAC</span>
+        <span class="tag">STM32 ADC</span>
+        <span class="tag">SPI / UART / PWM / GPIO</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>1. Project Goal</h2>
+      <p>
+        The goal is to build a <strong>mini HIL testbench</strong> that can automatically test
+        embedded firmware running on a DUT board. The final target architecture is:
+      </p>
+      <pre>PC running Robot Framework
+        |
+        | USB Serial
+        v
+ESP32 running Zephyr = Testbench Firmware
+        |
+        | GPIO / UART / SPI / PWM / DAC analog signal
+        v
+STM32 running Zephyr = DUT Firmware</pre>
+
+      <p>
+        The ESP32 testbench receives test commands from the PC, generates electrical signals,
+        communicates with the STM32 DUT, reads responses, then sends results back to Robot Framework.
+        Robot Framework decides whether each test case is PASS or FAIL.
+      </p>
+
+      <div class="note">
+        <strong>Important:</strong> The project is not mainly about making an STM32 application.
+        The project is about making a reusable embedded testing platform.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Current Situation and Temporary Plan</h2>
+      <p>
+        Right now you only have one STM32 board. That is okay. Start with a temporary loopback setup
+        to build the project core before buying the ESP32.
+      </p>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Temporary Setup</h3>
+          <pre>PC Robot Framework
+        |
+        | USB Serial
+        v
+STM32 running Zephyr
+        |
+        | Loopback wires
+        v
+Same STM32 pins</pre>
+          <p>
+            This stage proves the command protocol, Robot integration, GPIO, UART, PWM, SPI basics,
+            and project structure.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Final Setup</h3>
+          <pre>PC Robot Framework
+        |
+        | USB Serial
+        v
+ESP32 Testbench using Zephyr
+        |
+        | Real signals
+        v
+STM32 DUT using Zephyr</pre>
+          <p>
+            After the ESP32 arrives, move the testbench firmware from STM32 to ESP32 and keep STM32
+            as the real DUT.
+          </p>
+        </div>
+      </div>
+
+      <div class="warning">
+        Do not wait for ESP32 to start. Start now with STM32 loopback. The hard parts are the protocol,
+        Zephyr drivers, Robot tests, test cases, and documentation — not only the board migration.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. Final Deliverables</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Deliverable</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ESP32 Testbench Firmware</td>
+            <td>Zephyr firmware that receives commands from PC and controls GPIO, UART, SPI, PWM, and DAC.</td>
+          </tr>
+          <tr>
+            <td>STM32 DUT Firmware</td>
+            <td>Zephyr firmware that behaves like a small ECU and reacts to testbench inputs.</td>
+          </tr>
+          <tr>
+            <td>Robot Framework Test Suite</td>
+            <td>Automated test cases for GPIO, UART, PWM, ADC/DAC, and SPI.</td>
+          </tr>
+          <tr>
+            <td>Python Serial Library</td>
+            <td>Robot custom library that sends commands to the testbench and parses responses.</td>
+          </tr>
+          <tr>
+            <td>Test Reports</td>
+            <td>Robot output: <code>log.html</code>, <code>report.html</code>, and <code>output.xml</code>.</td>
+          </tr>
+          <tr>
+            <td>Oscilloscope Evidence</td>
+            <td>PWM and analog signal screenshots.</td>
+          </tr>
+          <tr>
+            <td>Saleae Evidence</td>
+            <td>UART and SPI decoded captures.</td>
+          </tr>
+          <tr>
+            <td>Documentation</td>
+            <td>Architecture, protocol, wiring, test plan, known limitations, and demo steps.</td>
+          </tr>
+          <tr>
+            <td>Presentation Demo</td>
+            <td>A clear story showing how an automated test moves from Robot to hardware and returns PASS/FAIL.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>4. Recommended GitHub Repository Structure</h2>
+      <pre>zephyr-hil-testbench/
+|
+|-- README.md
+|-- docs/
+|   |-- setup.md
+|   |-- architecture.md
+|   |-- protocol.md
+|   |-- wiring.md
+|   |-- test_plan.md
+|   |-- presentation_notes.md
+|
+|-- firmware/
+|   |-- testbench_esp32/
+|   |   |-- CMakeLists.txt
+|   |   |-- prj.conf
+|   |   |-- boards/
+|   |   |-- src/
+|   |       |-- main.c
+|   |       |-- command_parser.c
+|   |       |-- command_parser.h
+|   |       |-- gpio_service.c
+|   |       |-- gpio_service.h
+|   |       |-- uart_service.c
+|   |       |-- uart_service.h
+|   |       |-- spi_service.c
+|   |       |-- spi_service.h
+|   |       |-- pwm_service.c
+|   |       |-- pwm_service.h
+|   |       |-- dac_service.c
+|   |       |-- dac_service.h
+|   |
+|   |-- dut_stm32/
+|   |   |-- CMakeLists.txt
+|   |   |-- prj.conf
+|   |   |-- boards/
+|   |   |-- src/
+|   |       |-- main.c
+|   |       |-- gpio_app.c
+|   |       |-- uart_app.c
+|   |       |-- spi_app.c
+|   |       |-- pwm_app.c
+|   |       |-- adc_app.c
+|   |
+|   |-- loopback_stm32_temp/
+|       |-- CMakeLists.txt
+|       |-- prj.conf
+|       |-- src/
+|           |-- main.c
+|
+|-- robot_tests/
+|   |-- libraries/
+|   |   |-- TestbenchSerial.py
+|   |
+|   |-- resources/
+|   |   |-- common_keywords.robot
+|   |
+|   |-- tests/
+|       |-- 01_gpio_tests.robot
+|       |-- 02_uart_tests.robot
+|       |-- 03_pwm_tests.robot
+|       |-- 04_adc_dac_tests.robot
+|       |-- 05_spi_tests.robot
+|
+|-- captures/
+|   |-- oscilloscope/
+|   |-- saleae/
+|
+|-- reports/
+|   |-- .gitkeep
+|
+|-- scripts/
+|   |-- run_robot_tests.sh
+|   |-- serial_terminal.py
+|
+|-- project_management/
+    |-- backlog.md
+    |-- sprint_plan.md
+    |-- daily_log.md</pre>
+    </section>
+
+    <section class="section">
+      <h2>5. Communication Protocol Between PC and Testbench</h2>
+      <p>
+        Use a simple text-based protocol first. It is easier to debug with a serial terminal,
+        oscilloscope, Saleae, and Robot Framework.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Meaning</th>
+            <th>Expected Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>PING</code></td>
+            <td>Check if testbench is alive.</td>
+            <td><code>OK PONG</code></td>
+          </tr>
+          <tr>
+            <td><code>GPIO_SET OUT1 1</code></td>
+            <td>Set testbench output pin HIGH.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>GPIO_READ IN1</code></td>
+            <td>Read testbench input pin.</td>
+            <td><code>OK 1</code> or <code>OK 0</code></td>
+          </tr>
+          <tr>
+            <td><code>UART_SEND 55 AA</code></td>
+            <td>Send UART frame from testbench to DUT.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>UART_EXPECT CC 100</code></td>
+            <td>Wait up to 100 ms for DUT UART response <code>0xCC</code>.</td>
+            <td><code>OK MATCH</code> or <code>ERR TIMEOUT</code></td>
+          </tr>
+          <tr>
+            <td><code>PWM_SET CH1 10000 50</code></td>
+            <td>Generate 10 kHz PWM with 50% duty.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>DAC_SET CH1 1500</code></td>
+            <td>Generate analog output of 1500 mV from ESP32 DAC.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>ADC_READ CH1</code></td>
+            <td>Read analog voltage from DUT or loopback input.</td>
+            <td><code>OK 1485</code></td>
+          </tr>
+          <tr>
+            <td><code>SPI_TXRX A5 5A</code></td>
+            <td>Send SPI bytes and read DUT response.</td>
+            <td><code>OK 12 34</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        Use logical names like <code>OUT1</code>, <code>IN1</code>, <code>CH1</code> instead of real pin names in Robot.
+        Keep pin mapping inside the firmware or documentation. This makes board migration easier.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. Team Working Model</h2>
+      <p>
+        Since both team members want to understand the whole project, do not divide by layer.
+        Do not make one person only Robot and the other only firmware. Instead, divide by feature.
+      </p>
+
+      <pre>Feature Owner Model:
+
+One person owns one complete feature from end to end:
+Robot Test Case -> Python Library -> Testbench Command -> DUT Behavior -> Hardware Evidence -> Documentation</pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Owner</th>
+            <th>Reviewer</th>
+            <th>Scope</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GPIO</td>
+            <td>Person A</td>
+            <td>Person B</td>
+            <td>Robot + Python + Testbench GPIO + DUT GPIO + test report.</td>
+          </tr>
+          <tr>
+            <td>UART</td>
+            <td>Person B</td>
+            <td>Person A</td>
+            <td>Robot + Python + UART frame test + DUT response + Saleae capture.</td>
+          </tr>
+          <tr>
+            <td>PWM</td>
+            <td>Person A</td>
+            <td>Person B</td>
+            <td>Robot + Python + PWM generation/check + oscilloscope evidence.</td>
+          </tr>
+          <tr>
+            <td>ADC/DAC</td>
+            <td>Person B</td>
+            <td>Person A</td>
+            <td>ESP32 DAC output + STM32 ADC read + tolerance-based Robot test.</td>
+          </tr>
+          <tr>
+            <td>SPI</td>
+            <td>Person A</td>
+            <td>Person B</td>
+            <td>Robot + Python + SPI command/response + Saleae SPI decode.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success">
+        Rule: A feature is not done until the reviewer runs it, understands it, changes a small part,
+        and approves the documentation.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. Project Phases and Timeline</h2>
+      <p>
+        A realistic timeline is <strong>18 to 24 days</strong> if both members are still learning Zephyr,
+        Robot Framework, and embedded testing concepts.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Duration</th>
+            <th>Goal</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Phase 0: Setup</td>
+            <td>2 days</td>
+            <td>Repository, Zephyr setup, Robot setup, first serial communication.</td>
+            <td>Hello world on STM32 + Robot installed + repo structure.</td>
+          </tr>
+          <tr>
+            <td>Phase 1: Core Protocol</td>
+            <td>2 days</td>
+            <td>PC sends command to board and receives response.</td>
+            <td><code>PING -> OK PONG</code>.</td>
+          </tr>
+          <tr>
+            <td>Phase 2: GPIO MVP</td>
+            <td>3 days</td>
+            <td>First complete end-to-end test.</td>
+            <td>Robot GPIO test PASS/FAIL report.</td>
+          </tr>
+          <tr>
+            <td>Phase 3: UART Feature</td>
+            <td>3 days</td>
+            <td>Test DUT behavior when receiving a specific UART frame.</td>
+            <td>UART Robot tests + Saleae decode.</td>
+          </tr>
+          <tr>
+            <td>Phase 4: PWM Feature</td>
+            <td>3 days</td>
+            <td>Generate/check PWM behavior.</td>
+            <td>PWM Robot test + oscilloscope screenshot.</td>
+          </tr>
+          <tr>
+            <td>Phase 5: SPI Feature</td>
+            <td>3 days</td>
+            <td>Test SPI command/response behavior.</td>
+            <td>SPI Robot test + Saleae decode.</td>
+          </tr>
+          <tr>
+            <td>Phase 6: ADC/DAC Feature</td>
+            <td>3-4 days</td>
+            <td>ESP32 generates analog voltage, STM32 reads it through ADC.</td>
+            <td>ADC/DAC tolerance-based tests.</td>
+          </tr>
+          <tr>
+            <td>Phase 7: Cleanup and Presentation</td>
+            <td>2-4 days</td>
+            <td>Documentation, reports, captures, demo video, presentation story.</td>
+            <td>Final GitHub repo + demo.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>8. Strong Test Cases for Presentation</h2>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>GPIO Test Case: Safety Interlock</h3>
+          <p><strong>Story:</strong> The DUT should enable an output only when an enable input is HIGH.</p>
+          <pre>Test Steps:
+1. Robot sends GPIO_SET ENABLE 0
+2. Testbench drives DUT input LOW
+3. Robot reads DUT output
+4. Expected output = 0
+5. Robot sends GPIO_SET ENABLE 1
+6. Expected output = 1</pre>
+          <p><strong>Good presentation point:</strong> This shows automated digital input/output validation.</p>
+        </div>
+
+        <div class="card">
+          <h3>UART Test Case: Valid Frame ACK</h3>
+          <p><strong>Story:</strong> The DUT waits for a specific UART command. If it receives the correct frame, it replies ACK.</p>
+          <pre>Valid Frame: 0x55 0xAA
+Expected DUT Response: 0xCC
+
+Test Steps:
+1. Robot sends UART_SEND 55 AA
+2. Testbench sends bytes to DUT
+3. DUT validates frame
+4. DUT replies 0xCC
+5. Robot expects 0xCC</pre>
+          <p><strong>Good presentation point:</strong> Saleae can decode the exact UART frame and prove the hardware communication.</p>
+        </div>
+
+        <div class="card">
+          <h3>UART Negative Test: Invalid Frame NACK</h3>
+          <p><strong>Story:</strong> The DUT should reject wrong frames, not behave randomly.</p>
+          <pre>Invalid Frame: 0x55 0xAB
+Expected DUT Response: 0xEE
+
+Robot checks that DUT rejects the command.</pre>
+          <p><strong>Good presentation point:</strong> Negative tests show real test engineering, not only happy-path demos.</p>
+        </div>
+
+        <div class="card">
+          <h3>PWM Test Case: Motor Speed Command</h3>
+          <p><strong>Story:</strong> The DUT receives a command and changes PWM duty cycle to represent motor speed.</p>
+          <pre>Command: Set speed to 50%
+Expected PWM:
+Frequency = 10 kHz
+Duty Cycle = 50%</pre>
+          <p><strong>Good presentation point:</strong> Oscilloscope screenshot proves real electrical output.</p>
+        </div>
+
+        <div class="card">
+          <h3>ADC/DAC Test Case: Sensor Threshold</h3>
+          <p><strong>Story:</strong> ESP32 testbench simulates an analog sensor using DAC. STM32 DUT reads it with ADC.</p>
+          <pre>Input Voltage = 1.0 V
+Expected DUT State = NORMAL
+
+Input Voltage = 2.5 V
+Expected DUT State = WARNING
+
+Input Voltage = 3.0 V
+Expected DUT State = FAULT</pre>
+          <p><strong>Good presentation point:</strong> This is close to real HIL because the testbench simulates a sensor.</p>
+        </div>
+
+        <div class="card">
+          <h3>SPI Test Case: Register Read</h3>
+          <p><strong>Story:</strong> The testbench reads a virtual register from the DUT over SPI.</p>
+          <pre>SPI Command: READ_REG 0x10
+Expected Response: 0xAB
+
+Negative Test:
+READ_REG 0x99
+Expected Response: Error code 0xFF</pre>
+          <p><strong>Good presentation point:</strong> Saleae SPI decode shows MOSI, MISO, SCLK, and CS behavior.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>9. Feature-by-Feature Detailed Tasks</h2>
+
+      <h3>9.1 GPIO Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Robot GPIO keywords</td>
+            <td>Create <code>Set GPIO</code> and <code>Read GPIO</code> keywords.</td>
+            <td>Robot can send GPIO commands through Python.</td>
+          </tr>
+          <tr>
+            <td>Testbench GPIO service</td>
+            <td>Implement GPIO set/read commands in Zephyr.</td>
+            <td>Serial terminal can control pins manually.</td>
+          </tr>
+          <tr>
+            <td>DUT GPIO behavior</td>
+            <td>DUT reacts to input and changes output.</td>
+            <td>Input HIGH causes expected output HIGH.</td>
+          </tr>
+          <tr>
+            <td>Test report</td>
+            <td>Run positive and negative GPIO tests.</td>
+            <td>Robot report contains PASS/FAIL details.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.2 UART Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UART command from Robot</td>
+            <td>Robot asks testbench to send specific bytes.</td>
+            <td><code>UART_SEND 55 AA</code> works.</td>
+          </tr>
+          <tr>
+            <td>DUT UART parser</td>
+            <td>DUT checks valid and invalid frames.</td>
+            <td>Valid frame returns ACK, invalid frame returns NACK.</td>
+          </tr>
+          <tr>
+            <td>Timeout handling</td>
+            <td>Robot fails if DUT does not reply in time.</td>
+            <td>Timeout test produces clear failure.</td>
+          </tr>
+          <tr>
+            <td>Saleae capture</td>
+            <td>Capture TX/RX and decode UART.</td>
+            <td>Screenshot saved in repo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.3 PWM Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PWM generation/check</td>
+            <td>DUT or testbench generates PWM depending on test story.</td>
+            <td>10 kHz 50% duty appears on oscilloscope.</td>
+          </tr>
+          <tr>
+            <td>PWM command mapping</td>
+            <td>UART command changes DUT PWM duty cycle.</td>
+            <td>Command 25%, 50%, 75% produces correct waveform.</td>
+          </tr>
+          <tr>
+            <td>Boundary tests</td>
+            <td>Test 0%, 100%, invalid duty >100%.</td>
+            <td>Invalid values are rejected safely.</td>
+          </tr>
+          <tr>
+            <td>Scope evidence</td>
+            <td>Measure frequency and duty.</td>
+            <td>Images saved in repo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.4 ADC/DAC Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ESP32 DAC service</td>
+            <td>ESP32 generates analog voltage levels.</td>
+            <td><code>DAC_SET CH1 1500</code> produces about 1.5 V.</td>
+          </tr>
+          <tr>
+            <td>STM32 ADC read</td>
+            <td>DUT reads analog voltage and maps it to states.</td>
+            <td>ADC readings are stable within tolerance.</td>
+          </tr>
+          <tr>
+            <td>Tolerance-based tests</td>
+            <td>Robot checks ranges, not exact values.</td>
+            <td>Example: 1500 mV accepted between 1450 and 1550 mV.</td>
+          </tr>
+          <tr>
+            <td>Analog validation</td>
+            <td>Use oscilloscope/multimeter to verify DAC voltage.</td>
+            <td>Evidence saved in captures folder.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.5 SPI Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SPI wiring</td>
+            <td>Connect MOSI, MISO, SCLK, CS, and GND.</td>
+            <td>Electrical connections verified.</td>
+          </tr>
+          <tr>
+            <td>DUT virtual registers</td>
+            <td>DUT exposes simple fake registers over SPI.</td>
+            <td>Register 0x10 returns 0xAB.</td>
+          </tr>
+          <tr>
+            <td>Robot SPI tests</td>
+            <td>Robot sends SPI read/write commands via testbench.</td>
+            <td>Valid and invalid register tests run.</td>
+          </tr>
+          <tr>
+            <td>Saleae SPI decode</td>
+            <td>Decode SPI transaction.</td>
+            <td>Capture shows command and response bytes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>10. Temporary STM32 Loopback Tasks Before ESP32</h2>
+      <p>
+        Use your current STM32 board to reduce risk before the ESP32 arrives.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Loopback Test</th>
+            <th>Wiring</th>
+            <th>What You Learn</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GPIO Loopback</td>
+            <td>Output pin connected to input pin.</td>
+            <td>Robot, Python, serial protocol, Zephyr GPIO.</td>
+          </tr>
+          <tr>
+            <td>UART Loopback</td>
+            <td>UART TX connected to UART RX.</td>
+            <td>Zephyr UART API, frame sending, timeout handling.</td>
+          </tr>
+          <tr>
+            <td>PWM Observation</td>
+            <td>PWM pin connected to oscilloscope.</td>
+            <td>Zephyr PWM API and scope measurement.</td>
+          </tr>
+          <tr>
+            <td>SPI Loopback</td>
+            <td>MOSI connected to MISO, or use internal test if available.</td>
+            <td>SPI transfer basics and Saleae decoding.</td>
+          </tr>
+          <tr>
+            <td>ADC Temporary Test</td>
+            <td>Use potentiometer or voltage divider if available.</td>
+            <td>Zephyr ADC API and tolerance testing.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>11. GitHub Issues Template</h2>
+      <pre>Title: [GPIO] Implement Robot GPIO test
+
+Goal:
+Implement an end-to-end Robot test that sets a GPIO output and reads a GPIO input.
+
+Owner:
+Person A
+
+Reviewer:
+Person B
+
+Scope:
+- Robot test case
+- Python serial keyword
+- Testbench command
+- DUT/loopback behavior
+- Documentation
+
+Definition of Done:
+- Code builds successfully
+- Test runs from Robot Framework
+- PASS and FAIL cases are tested
+- Reviewer runs the test on hardware
+- Evidence added to reports or captures
+
+Notes:
+Any issue, limitation, or important learning point.</pre>
+    </section>
+
+    <section class="section">
+      <h2>12. Presentation Story</h2>
+      <p>
+        Your presentation should not be just a list of drivers. Tell it as a testing story:
+      </p>
+
+      <ol>
+        <li>Manual embedded testing is slow and error-prone.</li>
+        <li>We built a mini HIL testbench to automate embedded validation.</li>
+        <li>Robot Framework sends high-level test cases.</li>
+        <li>Python converts test steps into serial commands.</li>
+        <li>ESP32 testbench generates real electrical signals.</li>
+        <li>STM32 DUT reacts as an ECU-like system.</li>
+        <li>Robot compares actual vs expected results.</li>
+        <li>Oscilloscope and Saleae prove that the hardware signals are real.</li>
+      </ol>
+
+      <div class="success">
+        Best demo: Run one Robot command live, show the DUT reaction, show PASS report, then show Saleae/scope evidence.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>13. Recommended First 7 Days</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Person A</th>
+            <th>Person B</th>
+            <th>Shared Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Day 1</td>
+            <td>Create GitHub repo and structure.</td>
+            <td>Setup Zephyr and flash STM32 hello world.</td>
+            <td>Repo + first firmware build.</td>
+          </tr>
+          <tr>
+            <td>Day 2</td>
+            <td>Robot Framework + Python serial setup.</td>
+            <td>Zephyr UART console / serial receive.</td>
+            <td><code>PING -> OK PONG</code>.</td>
+          </tr>
+          <tr>
+            <td>Day 3</td>
+            <td>Command parser design.</td>
+            <td>GPIO Zephyr service.</td>
+            <td><code>GPIO_SET</code> and <code>GPIO_READ</code> manually.</td>
+          </tr>
+          <tr>
+            <td>Day 4</td>
+            <td>Robot GPIO test.</td>
+            <td>GPIO loopback wiring and validation.</td>
+            <td>First Robot PASS report.</td>
+          </tr>
+          <tr>
+            <td>Day 5</td>
+            <td>UART feature owner starts UART test.</td>
+            <td>Reviewer tests GPIO and updates docs.</td>
+            <td>UART loopback manual test.</td>
+          </tr>
+          <tr>
+            <td>Day 6</td>
+            <td>UART Robot test.</td>
+            <td>Saleae UART capture.</td>
+            <td>UART test + capture.</td>
+          </tr>
+          <tr>
+            <td>Day 7</td>
+            <td>Cleanup code and README.</td>
+            <td>Prepare demo video or screenshots.</td>
+            <td>Milestone 1 release.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>14. Final Success Criteria</h2>
+      <ul>
+        <li>Robot Framework can run all tests from one command.</li>
+        <li>Every test has clear expected and actual results.</li>
+        <li>GPIO, UART, PWM, ADC/DAC, and SPI are demonstrated.</li>
+        <li>At least one negative test exists for UART, SPI, and ADC threshold.</li>
+        <li>Oscilloscope proves analog/PWM behavior.</li>
+        <li>Saleae proves UART/SPI frames.</li>
+        <li>Both team members can explain the full flow from Robot to hardware.</li>
+        <li>GitHub repo is clean, documented, and easy to run.</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr HIL Testbench Project Plan</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --red: #f87171;
+      --border: #374151;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      width: min(1200px, 94%);
+      margin: auto;
+      padding: 32px 0 80px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      color: var(--accent);
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      color: white;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 900px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 22px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .card {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+      margin: 3px 4px 3px 0;
+      color: #020617;
+      background: var(--accent);
+    }
+
+    .tag.green { background: var(--green); }
+    .tag.yellow { background: var(--yellow); }
+    .tag.red { background: var(--red); }
+
+    code, pre {
+      background: #020617;
+      color: #d1d5db;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    code {
+      padding: 2px 6px;
+    }
+
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #020617;
+      color: white;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      background: #0b1120;
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .warning {
+      border-left: 4px solid var(--yellow);
+      padding: 12px 16px;
+      background: #1c1917;
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .success {
+      border-left: 4px solid var(--green);
+      padding: 12px 16px;
+      background: #052e16;
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Zephyr HIL Testbench Project Plan</h1>
+      <p class="subtitle">
+        A practical plan for building a mini Hardware-in-the-Loop testing system using
+        Robot Framework, Python, Zephyr RTOS, ESP32 as the testbench, and STM32 as the DUT.
+      </p>
+      <div>
+        <span class="tag">Robot Framework</span>
+        <span class="tag">Python</span>
+        <span class="tag">Zephyr RTOS</span>
+        <span class="tag">ESP32 DAC</span>
+        <span class="tag">STM32 ADC</span>
+        <span class="tag">SPI / UART / PWM / GPIO</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>1. Project Goal</h2>
+      <p>
+        The goal is to build a <strong>mini HIL testbench</strong> that can automatically test
+        embedded firmware running on a DUT board. The final target architecture is:
+      </p>
+      <pre>PC running Robot Framework
+        |
+        | USB Serial
+        v
+ESP32 running Zephyr = Testbench Firmware
+        |
+        | GPIO / UART / SPI / PWM / DAC analog signal
+        v
+STM32 running Zephyr = DUT Firmware</pre>
+
+      <p>
+        The ESP32 testbench receives test commands from the PC, generates electrical signals,
+        communicates with the STM32 DUT, reads responses, then sends results back to Robot Framework.
+        Robot Framework decides whether each test case is PASS or FAIL.
+      </p>
+
+      <div class="note">
+        <strong>Important:</strong> The project is not mainly about making an STM32 application.
+        The project is about making a reusable embedded testing platform.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Current Situation and Temporary Plan</h2>
+      <p>
+        Right now you only have one STM32 board. That is okay. Start with a temporary loopback setup
+        to build the project core before buying the ESP32.
+      </p>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Temporary Setup</h3>
+          <pre>PC Robot Framework
+        |
+        | USB Serial
+        v
+STM32 running Zephyr
+        |
+        | Loopback wires
+        v
+Same STM32 pins</pre>
+          <p>
+            This stage proves the command protocol, Robot integration, GPIO, UART, PWM, SPI basics,
+            and project structure.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Final Setup</h3>
+          <pre>PC Robot Framework
+        |
+        | USB Serial
+        v
+ESP32 Testbench using Zephyr
+        |
+        | Real signals
+        v
+STM32 DUT using Zephyr</pre>
+          <p>
+            After the ESP32 arrives, move the testbench firmware from STM32 to ESP32 and keep STM32
+            as the real DUT.
+          </p>
+        </div>
+      </div>
+
+      <div class="warning">
+        Do not wait for ESP32 to start. Start now with STM32 loopback. The hard parts are the protocol,
+        Zephyr drivers, Robot tests, test cases, and documentation — not only the board migration.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. Final Deliverables</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Deliverable</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ESP32 Testbench Firmware</td>
+            <td>Zephyr firmware that receives commands from PC and controls GPIO, UART, SPI, PWM, and DAC.</td>
+          </tr>
+          <tr>
+            <td>STM32 DUT Firmware</td>
+            <td>Zephyr firmware that behaves like a small ECU and reacts to testbench inputs.</td>
+          </tr>
+          <tr>
+            <td>Robot Framework Test Suite</td>
+            <td>Automated test cases for GPIO, UART, PWM, ADC/DAC, and SPI.</td>
+          </tr>
+          <tr>
+            <td>Python Serial Library</td>
+            <td>Robot custom library that sends commands to the testbench and parses responses.</td>
+          </tr>
+          <tr>
+            <td>Test Reports</td>
+            <td>Robot output: <code>log.html</code>, <code>report.html</code>, and <code>output.xml</code>.</td>
+          </tr>
+          <tr>
+            <td>Oscilloscope Evidence</td>
+            <td>PWM and analog signal screenshots.</td>
+          </tr>
+          <tr>
+            <td>Saleae Evidence</td>
+            <td>UART and SPI decoded captures.</td>
+          </tr>
+          <tr>
+            <td>Documentation</td>
+            <td>Architecture, protocol, wiring, test plan, known limitations, and demo steps.</td>
+          </tr>
+          <tr>
+            <td>Presentation Demo</td>
+            <td>A clear story showing how an automated test moves from Robot to hardware and returns PASS/FAIL.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>4. Recommended GitHub Repository Structure</h2>
+      <pre>zephyr-hil-testbench/
+|
+|-- README.md
+|-- docs/
+|   |-- setup.md
+|   |-- architecture.md
+|   |-- protocol.md
+|   |-- wiring.md
+|   |-- test_plan.md
+|   |-- presentation_notes.md
+|
+|-- firmware/
+|   |-- testbench_esp32/
+|   |   |-- CMakeLists.txt
+|   |   |-- prj.conf
+|   |   |-- boards/
+|   |   |-- src/
+|   |       |-- main.c
+|   |       |-- command_parser.c
+|   |       |-- command_parser.h
+|   |       |-- gpio_service.c
+|   |       |-- gpio_service.h
+|   |       |-- uart_service.c
+|   |       |-- uart_service.h
+|   |       |-- spi_service.c
+|   |       |-- spi_service.h
+|   |       |-- pwm_service.c
+|   |       |-- pwm_service.h
+|   |       |-- dac_service.c
+|   |       |-- dac_service.h
+|   |
+|   |-- dut_stm32/
+|   |   |-- CMakeLists.txt
+|   |   |-- prj.conf
+|   |   |-- boards/
+|   |   |-- src/
+|   |       |-- main.c
+|   |       |-- gpio_app.c
+|   |       |-- uart_app.c
+|   |       |-- spi_app.c
+|   |       |-- pwm_app.c
+|   |       |-- adc_app.c
+|   |
+|   |-- loopback_stm32_temp/
+|       |-- CMakeLists.txt
+|       |-- prj.conf
+|       |-- src/
+|           |-- main.c
+|
+|-- robot_tests/
+|   |-- libraries/
+|   |   |-- TestbenchSerial.py
+|   |
+|   |-- resources/
+|   |   |-- common_keywords.robot
+|   |
+|   |-- tests/
+|       |-- 01_gpio_tests.robot
+|       |-- 02_uart_tests.robot
+|       |-- 03_pwm_tests.robot
+|       |-- 04_adc_dac_tests.robot
+|       |-- 05_spi_tests.robot
+|
+|-- captures/
+|   |-- oscilloscope/
+|   |-- saleae/
+|
+|-- reports/
+|   |-- .gitkeep
+|
+|-- scripts/
+|   |-- run_robot_tests.sh
+|   |-- serial_terminal.py
+|
+|-- project_management/
+    |-- backlog.md
+    |-- sprint_plan.md
+    |-- daily_log.md</pre>
+    </section>
+
+    <section class="section">
+      <h2>5. Communication Protocol Between PC and Testbench</h2>
+      <p>
+        Use a simple text-based protocol first. It is easier to debug with a serial terminal,
+        oscilloscope, Saleae, and Robot Framework.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Meaning</th>
+            <th>Expected Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>PING</code></td>
+            <td>Check if testbench is alive.</td>
+            <td><code>OK PONG</code></td>
+          </tr>
+          <tr>
+            <td><code>GPIO_SET OUT1 1</code></td>
+            <td>Set testbench output pin HIGH.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>GPIO_READ IN1</code></td>
+            <td>Read testbench input pin.</td>
+            <td><code>OK 1</code> or <code>OK 0</code></td>
+          </tr>
+          <tr>
+            <td><code>UART_SEND 55 AA</code></td>
+            <td>Send UART frame from testbench to DUT.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>UART_EXPECT CC 100</code></td>
+            <td>Wait up to 100 ms for DUT UART response <code>0xCC</code>.</td>
+            <td><code>OK MATCH</code> or <code>ERR TIMEOUT</code></td>
+          </tr>
+          <tr>
+            <td><code>PWM_SET CH1 10000 50</code></td>
+            <td>Generate 10 kHz PWM with 50% duty.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>DAC_SET CH1 1500</code></td>
+            <td>Generate analog output of 1500 mV from ESP32 DAC.</td>
+            <td><code>OK</code></td>
+          </tr>
+          <tr>
+            <td><code>ADC_READ CH1</code></td>
+            <td>Read analog voltage from DUT or loopback input.</td>
+            <td><code>OK 1485</code></td>
+          </tr>
+          <tr>
+            <td><code>SPI_TXRX A5 5A</code></td>
+            <td>Send SPI bytes and read DUT response.</td>
+            <td><code>OK 12 34</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        Use logical names like <code>OUT1</code>, <code>IN1</code>, <code>CH1</code> instead of real pin names in Robot.
+        Keep pin mapping inside the firmware or documentation. This makes board migration easier.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. Team Working Model</h2>
+      <p>
+        Since both team members want to understand the whole project, do not divide by layer.
+        Do not make one person only Robot and the other only firmware. Instead, divide by feature.
+      </p>
+
+      <pre>Feature Owner Model:
+
+One person owns one complete feature from end to end:
+Robot Test Case -> Python Library -> Testbench Command -> DUT Behavior -> Hardware Evidence -> Documentation</pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Owner</th>
+            <th>Reviewer</th>
+            <th>Scope</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GPIO</td>
+            <td>Person A</td>
+            <td>Person B</td>
+            <td>Robot + Python + Testbench GPIO + DUT GPIO + test report.</td>
+          </tr>
+          <tr>
+            <td>UART</td>
+            <td>Person B</td>
+            <td>Person A</td>
+            <td>Robot + Python + UART frame test + DUT response + Saleae capture.</td>
+          </tr>
+          <tr>
+            <td>PWM</td>
+            <td>Person A</td>
+            <td>Person B</td>
+            <td>Robot + Python + PWM generation/check + oscilloscope evidence.</td>
+          </tr>
+          <tr>
+            <td>ADC/DAC</td>
+            <td>Person B</td>
+            <td>Person A</td>
+            <td>ESP32 DAC output + STM32 ADC read + tolerance-based Robot test.</td>
+          </tr>
+          <tr>
+            <td>SPI</td>
+            <td>Person A</td>
+            <td>Person B</td>
+            <td>Robot + Python + SPI command/response + Saleae SPI decode.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success">
+        Rule: A feature is not done until the reviewer runs it, understands it, changes a small part,
+        and approves the documentation.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. Project Phases and Timeline</h2>
+      <p>
+        A realistic timeline is <strong>18 to 24 days</strong> if both members are still learning Zephyr,
+        Robot Framework, and embedded testing concepts.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Duration</th>
+            <th>Goal</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Phase 0: Setup</td>
+            <td>2 days</td>
+            <td>Repository, Zephyr setup, Robot setup, first serial communication.</td>
+            <td>Hello world on STM32 + Robot installed + repo structure.</td>
+          </tr>
+          <tr>
+            <td>Phase 1: Core Protocol</td>
+            <td>2 days</td>
+            <td>PC sends command to board and receives response.</td>
+            <td><code>PING -> OK PONG</code>.</td>
+          </tr>
+          <tr>
+            <td>Phase 2: GPIO MVP</td>
+            <td>3 days</td>
+            <td>First complete end-to-end test.</td>
+            <td>Robot GPIO test PASS/FAIL report.</td>
+          </tr>
+          <tr>
+            <td>Phase 3: UART Feature</td>
+            <td>3 days</td>
+            <td>Test DUT behavior when receiving a specific UART frame.</td>
+            <td>UART Robot tests + Saleae decode.</td>
+          </tr>
+          <tr>
+            <td>Phase 4: PWM Feature</td>
+            <td>3 days</td>
+            <td>Generate/check PWM behavior.</td>
+            <td>PWM Robot test + oscilloscope screenshot.</td>
+          </tr>
+          <tr>
+            <td>Phase 5: SPI Feature</td>
+            <td>3 days</td>
+            <td>Test SPI command/response behavior.</td>
+            <td>SPI Robot test + Saleae decode.</td>
+          </tr>
+          <tr>
+            <td>Phase 6: ADC/DAC Feature</td>
+            <td>3-4 days</td>
+            <td>ESP32 generates analog voltage, STM32 reads it through ADC.</td>
+            <td>ADC/DAC tolerance-based tests.</td>
+          </tr>
+          <tr>
+            <td>Phase 7: Cleanup and Presentation</td>
+            <td>2-4 days</td>
+            <td>Documentation, reports, captures, demo video, presentation story.</td>
+            <td>Final GitHub repo + demo.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>8. Strong Test Cases for Presentation</h2>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>GPIO Test Case: Safety Interlock</h3>
+          <p><strong>Story:</strong> The DUT should enable an output only when an enable input is HIGH.</p>
+          <pre>Test Steps:
+1. Robot sends GPIO_SET ENABLE 0
+2. Testbench drives DUT input LOW
+3. Robot reads DUT output
+4. Expected output = 0
+5. Robot sends GPIO_SET ENABLE 1
+6. Expected output = 1</pre>
+          <p><strong>Good presentation point:</strong> This shows automated digital input/output validation.</p>
+        </div>
+
+        <div class="card">
+          <h3>UART Test Case: Valid Frame ACK</h3>
+          <p><strong>Story:</strong> The DUT waits for a specific UART command. If it receives the correct frame, it replies ACK.</p>
+          <pre>Valid Frame: 0x55 0xAA
+Expected DUT Response: 0xCC
+
+Test Steps:
+1. Robot sends UART_SEND 55 AA
+2. Testbench sends bytes to DUT
+3. DUT validates frame
+4. DUT replies 0xCC
+5. Robot expects 0xCC</pre>
+          <p><strong>Good presentation point:</strong> Saleae can decode the exact UART frame and prove the hardware communication.</p>
+        </div>
+
+        <div class="card">
+          <h3>UART Negative Test: Invalid Frame NACK</h3>
+          <p><strong>Story:</strong> The DUT should reject wrong frames, not behave randomly.</p>
+          <pre>Invalid Frame: 0x55 0xAB
+Expected DUT Response: 0xEE
+
+Robot checks that DUT rejects the command.</pre>
+          <p><strong>Good presentation point:</strong> Negative tests show real test engineering, not only happy-path demos.</p>
+        </div>
+
+        <div class="card">
+          <h3>PWM Test Case: Motor Speed Command</h3>
+          <p><strong>Story:</strong> The DUT receives a command and changes PWM duty cycle to represent motor speed.</p>
+          <pre>Command: Set speed to 50%
+Expected PWM:
+Frequency = 10 kHz
+Duty Cycle = 50%</pre>
+          <p><strong>Good presentation point:</strong> Oscilloscope screenshot proves real electrical output.</p>
+        </div>
+
+        <div class="card">
+          <h3>ADC/DAC Test Case: Sensor Threshold</h3>
+          <p><strong>Story:</strong> ESP32 testbench simulates an analog sensor using DAC. STM32 DUT reads it with ADC.</p>
+          <pre>Input Voltage = 1.0 V
+Expected DUT State = NORMAL
+
+Input Voltage = 2.5 V
+Expected DUT State = WARNING
+
+Input Voltage = 3.0 V
+Expected DUT State = FAULT</pre>
+          <p><strong>Good presentation point:</strong> This is close to real HIL because the testbench simulates a sensor.</p>
+        </div>
+
+        <div class="card">
+          <h3>SPI Test Case: Register Read</h3>
+          <p><strong>Story:</strong> The testbench reads a virtual register from the DUT over SPI.</p>
+          <pre>SPI Command: READ_REG 0x10
+Expected Response: 0xAB
+
+Negative Test:
+READ_REG 0x99
+Expected Response: Error code 0xFF</pre>
+          <p><strong>Good presentation point:</strong> Saleae SPI decode shows MOSI, MISO, SCLK, and CS behavior.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>9. Feature-by-Feature Detailed Tasks</h2>
+
+      <h3>9.1 GPIO Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Robot GPIO keywords</td>
+            <td>Create <code>Set GPIO</code> and <code>Read GPIO</code> keywords.</td>
+            <td>Robot can send GPIO commands through Python.</td>
+          </tr>
+          <tr>
+            <td>Testbench GPIO service</td>
+            <td>Implement GPIO set/read commands in Zephyr.</td>
+            <td>Serial terminal can control pins manually.</td>
+          </tr>
+          <tr>
+            <td>DUT GPIO behavior</td>
+            <td>DUT reacts to input and changes output.</td>
+            <td>Input HIGH causes expected output HIGH.</td>
+          </tr>
+          <tr>
+            <td>Test report</td>
+            <td>Run positive and negative GPIO tests.</td>
+            <td>Robot report contains PASS/FAIL details.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.2 UART Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UART command from Robot</td>
+            <td>Robot asks testbench to send specific bytes.</td>
+            <td><code>UART_SEND 55 AA</code> works.</td>
+          </tr>
+          <tr>
+            <td>DUT UART parser</td>
+            <td>DUT checks valid and invalid frames.</td>
+            <td>Valid frame returns ACK, invalid frame returns NACK.</td>
+          </tr>
+          <tr>
+            <td>Timeout handling</td>
+            <td>Robot fails if DUT does not reply in time.</td>
+            <td>Timeout test produces clear failure.</td>
+          </tr>
+          <tr>
+            <td>Saleae capture</td>
+            <td>Capture TX/RX and decode UART.</td>
+            <td>Screenshot saved in repo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.3 PWM Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PWM generation/check</td>
+            <td>DUT or testbench generates PWM depending on test story.</td>
+            <td>10 kHz 50% duty appears on oscilloscope.</td>
+          </tr>
+          <tr>
+            <td>PWM command mapping</td>
+            <td>UART command changes DUT PWM duty cycle.</td>
+            <td>Command 25%, 50%, 75% produces correct waveform.</td>
+          </tr>
+          <tr>
+            <td>Boundary tests</td>
+            <td>Test 0%, 100%, invalid duty >100%.</td>
+            <td>Invalid values are rejected safely.</td>
+          </tr>
+          <tr>
+            <td>Scope evidence</td>
+            <td>Measure frequency and duty.</td>
+            <td>Images saved in repo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.4 ADC/DAC Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ESP32 DAC service</td>
+            <td>ESP32 generates analog voltage levels.</td>
+            <td><code>DAC_SET CH1 1500</code> produces about 1.5 V.</td>
+          </tr>
+          <tr>
+            <td>STM32 ADC read</td>
+            <td>DUT reads analog voltage and maps it to states.</td>
+            <td>ADC readings are stable within tolerance.</td>
+          </tr>
+          <tr>
+            <td>Tolerance-based tests</td>
+            <td>Robot checks ranges, not exact values.</td>
+            <td>Example: 1500 mV accepted between 1450 and 1550 mV.</td>
+          </tr>
+          <tr>
+            <td>Analog validation</td>
+            <td>Use oscilloscope/multimeter to verify DAC voltage.</td>
+            <td>Evidence saved in captures folder.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>9.5 SPI Feature</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Done When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SPI wiring</td>
+            <td>Connect MOSI, MISO, SCLK, CS, and GND.</td>
+            <td>Electrical connections verified.</td>
+          </tr>
+          <tr>
+            <td>DUT virtual registers</td>
+            <td>DUT exposes simple fake registers over SPI.</td>
+            <td>Register 0x10 returns 0xAB.</td>
+          </tr>
+          <tr>
+            <td>Robot SPI tests</td>
+            <td>Robot sends SPI read/write commands via testbench.</td>
+            <td>Valid and invalid register tests run.</td>
+          </tr>
+          <tr>
+            <td>Saleae SPI decode</td>
+            <td>Decode SPI transaction.</td>
+            <td>Capture shows command and response bytes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>10. Temporary STM32 Loopback Tasks Before ESP32</h2>
+      <p>
+        Use your current STM32 board to reduce risk before the ESP32 arrives.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Loopback Test</th>
+            <th>Wiring</th>
+            <th>What You Learn</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GPIO Loopback</td>
+            <td>Output pin connected to input pin.</td>
+            <td>Robot, Python, serial protocol, Zephyr GPIO.</td>
+          </tr>
+          <tr>
+            <td>UART Loopback</td>
+            <td>UART TX connected to UART RX.</td>
+            <td>Zephyr UART API, frame sending, timeout handling.</td>
+          </tr>
+          <tr>
+            <td>PWM Observation</td>
+            <td>PWM pin connected to oscilloscope.</td>
+            <td>Zephyr PWM API and scope measurement.</td>
+          </tr>
+          <tr>
+            <td>SPI Loopback</td>
+            <td>MOSI connected to MISO, or use internal test if available.</td>
+            <td>SPI transfer basics and Saleae decoding.</td>
+          </tr>
+          <tr>
+            <td>ADC Temporary Test</td>
+            <td>Use potentiometer or voltage divider if available.</td>
+            <td>Zephyr ADC API and tolerance testing.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>11. GitHub Issues Template</h2>
+      <pre>Title: [GPIO] Implement Robot GPIO test
+
+Goal:
+Implement an end-to-end Robot test that sets a GPIO output and reads a GPIO input.
+
+Owner:
+Person A
+
+Reviewer:
+Person B
+
+Scope:
+- Robot test case
+- Python serial keyword
+- Testbench command
+- DUT/loopback behavior
+- Documentation
+
+Definition of Done:
+- Code builds successfully
+- Test runs from Robot Framework
+- PASS and FAIL cases are tested
+- Reviewer runs the test on hardware
+- Evidence added to reports or captures
+
+Notes:
+Any issue, limitation, or important learning point.</pre>
+    </section>
+
+    <section class="section">
+      <h2>12. Presentation Story</h2>
+      <p>
+        Your presentation should not be just a list of drivers. Tell it as a testing story:
+      </p>
+
+      <ol>
+        <li>Manual embedded testing is slow and error-prone.</li>
+        <li>We built a mini HIL testbench to automate embedded validation.</li>
+        <li>Robot Framework sends high-level test cases.</li>
+        <li>Python converts test steps into serial commands.</li>
+        <li>ESP32 testbench generates real electrical signals.</li>
+        <li>STM32 DUT reacts as an ECU-like system.</li>
+        <li>Robot compares actual vs expected results.</li>
+        <li>Oscilloscope and Saleae prove that the hardware signals are real.</li>
+      </ol>
+
+      <div class="success">
+        Best demo: Run one Robot command live, show the DUT reaction, show PASS report, then show Saleae/scope evidence.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>13. Recommended First 7 Days</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Person A</th>
+            <th>Person B</th>
+            <th>Shared Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Day 1</td>
+            <td>Create GitHub repo and structure.</td>
+            <td>Setup Zephyr and flash STM32 hello world.</td>
+            <td>Repo + first firmware build.</td>
+          </tr>
+          <tr>
+            <td>Day 2</td>
+            <td>Robot Framework + Python serial setup.</td>
+            <td>Zephyr UART console / serial receive.</td>
+            <td><code>PING -> OK PONG</code>.</td>
+          </tr>
+          <tr>
+            <td>Day 3</td>
+            <td>Command parser design.</td>
+            <td>GPIO Zephyr service.</td>
+            <td><code>GPIO_SET</code> and <code>GPIO_READ</code> manually.</td>
+          </tr>
+          <tr>
+            <td>Day 4</td>
+            <td>Robot GPIO test.</td>
+            <td>GPIO loopback wiring and validation.</td>
+            <td>First Robot PASS report.</td>
+          </tr>
+          <tr>
+            <td>Day 5</td>
+            <td>UART feature owner starts UART test.</td>
+            <td>Reviewer tests GPIO and updates docs.</td>
+            <td>UART loopback manual test.</td>
+          </tr>
+          <tr>
+            <td>Day 6</td>
+            <td>UART Robot test.</td>
+            <td>Saleae UART capture.</td>
+            <td>UART test + capture.</td>
+          </tr>
+          <tr>
+            <td>Day 7</td>
+            <td>Cleanup code and README.</td>
+            <td>Prepare demo video or screenshots.</td>
+            <td>Milestone 1 release.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>14. Final Success Criteria</h2>
+      <ul>
+        <li>Robot Framework can run all tests from one command.</li>
+        <li>Every test has clear expected and actual results.</li>
+        <li>GPIO, UART, PWM, ADC/DAC, and SPI are demonstrated.</li>
+        <li>At least one negative test exists for UART, SPI, and ADC threshold.</li>
+        <li>Oscilloscope proves analog/PWM behavior.</li>
+        <li>Saleae proves UART/SPI frames.</li>
+        <li>Both team members can explain the full flow from Robot to hardware.</li>
+        <li>GitHub repo is clean, documented, and easy to run.</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>
