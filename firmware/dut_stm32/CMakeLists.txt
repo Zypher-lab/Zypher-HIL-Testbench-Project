@@ -7,5 +7,6 @@ target_sources(app PRIVATE
     src/main.c
     src/dio_app.c
     src/adc_app.c
+    src/uart_app.c
 
 )

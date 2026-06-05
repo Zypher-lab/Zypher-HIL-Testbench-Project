@@ -5,6 +5,7 @@
 #include "test_executor.h"
 #include "gpio_service.h"
 #include "dac_service.h"
+#include "uart_service.h"
 
 #define LINE_BUF_SIZE 128
 #define RESPONSE_BUF_SIZE 160
@@ -30,6 +31,11 @@ int main(void)
     if (dac_service_init() != 0)
     {
         uart_transport_send_line("ZTB|status=FAIL|err=DAC_INIT_FAILED\r\n");
+        return 0;
+    }
+    if (uart_service_init() != 0)
+    {
+        uart_transport_send_line("ZTB|status=FAIL|err=UART_INIT_FAILED\r\n");
         return 0;
     }
 
