@@ -12,4 +12,5 @@ target_sources(app PRIVATE
     src/board_map.c
     src/dac_service.c
     src/uart_service.c
+    src/pwm_service.c
 )

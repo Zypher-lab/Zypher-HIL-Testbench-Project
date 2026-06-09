@@ -41,3 +41,21 @@ UART Send Expect
     Response Status Should Be OK    ${response}
     Should Contain    ${response}    rx=${expected_rx}
     RETURN    ${response}
+PWM Write
+    [Arguments]    ${seq}    ${channel}    ${frequency}    ${duty_cycle}
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_WRITE|ch=${channel}|frequency=${frequency}|duty_cycle=${duty_cycle}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}
+
+PWM Read
+    [Arguments]    ${seq}    ${channel}    ${timeout}=1000
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_READ|ch=${channel}|timeout=${timeout}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}
+
+PWM Read With Tolerance
+    [Arguments]    ${seq}    ${channel}    ${frequency}    ${duty_cycle}    ${timeout}=1000    ${freq_tol_pct}=2    ${duty_tol_pp}=2
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_READ_WITH_TOLERANCE|ch=${channel}|frequency=${frequency}|duty_cycle=${duty_cycle}|freq_tol_pct=${freq_tol_pct}|duty_tol_pp=${duty_tol_pp}|timeout=${timeout}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}
+

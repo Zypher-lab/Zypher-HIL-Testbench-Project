@@ -1,20 +1,19 @@
 #include <zephyr/kernel.h>
-
 #include "uart_transport.h"
 #include "ztb_protocol.h"
 #include "test_executor.h"
 #include "gpio_service.h"
 #include "dac_service.h"
 #include "uart_service.h"
+#include "pwm_service.h"
 
-#define LINE_BUF_SIZE 128
+#define LINE_BUF_SIZE     128
 #define RESPONSE_BUF_SIZE 160
 
 int main(void)
 {
     char line[LINE_BUF_SIZE];
     char response_line[RESPONSE_BUF_SIZE];
-
     ztb_command_t command;
     ztb_response_t response;
 
@@ -28,14 +27,22 @@ int main(void)
         uart_transport_send_line("ZTB|status=FAIL|err=GPIO_INIT_FAILED\r\n");
         return 0;
     }
+
     if (dac_service_init() != 0)
     {
         uart_transport_send_line("ZTB|status=FAIL|err=DAC_INIT_FAILED\r\n");
         return 0;
     }
+
     if (uart_service_init() != 0)
     {
         uart_transport_send_line("ZTB|status=FAIL|err=UART_INIT_FAILED\r\n");
+        return 0;
+    }
+
+    if (pwm_service_init() != 0)
+    {
+        uart_transport_send_line("ZTB|status=FAIL|err=PWM_INIT_FAILED\r\n");
         return 0;
     }
 
@@ -54,7 +61,7 @@ int main(void)
             test_executor_execute(&command, &response);
         }
 
-        ztb_format_response(&response, response_line, sizeof(response_line));
+        ztb_format_response_with_cmd(&response, &command, response_line, sizeof(response_line));
         uart_transport_send_line(response_line);
     }
 

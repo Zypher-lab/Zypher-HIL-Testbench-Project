@@ -6,3 +6,27 @@
     status = "okay";
     current-speed = <115200>;
 };
+
+#include <zephyr/dt-bindings/pinctrl/esp32-pinctrl.h>
+
+&pinctrl {
+
+mcpwm0_default: mcpwm0_default {
+    group1 {
+        pinmux = <MCPWM0_OUT0A_GPIO32>;
+        output-enable;
+    };
+    group2 {
+        pinmux = <MCPWM0_CAP0_GPIO4>;
+    };
+};
+
+};
+
+&mcpwm0 {
+    status = "okay";
+    pinctrl-0 = <&mcpwm0_default>;
+    pinctrl-names = "default";
+    prescale = <255>;
+    prescale-timer0 = <103>;
+};
