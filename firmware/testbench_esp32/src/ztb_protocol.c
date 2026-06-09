@@ -42,12 +42,6 @@ static ztb_command_type_t parse_command_name(const char *cmd)
     if (strcmp(cmd, "PWM_READ_WITH_TOLERANCE") == 0) {
         return ZTB_CMD_PWM_READ_WITH_TOLERANCE;
     }
-    if (strcmp(cmd, "SPI_WRITE") == 0) {
-        return ZTB_CMD_SPI_WRITE;
-    }
-    if (strcmp(cmd, "SPI_READ") == 0) {
-        return ZTB_CMD_SPI_READ;
-    }
     if (strcmp(cmd, "SPI_SEND_EXPECT") == 0) {
         return ZTB_CMD_SPI_SEND_EXPECT;
     }

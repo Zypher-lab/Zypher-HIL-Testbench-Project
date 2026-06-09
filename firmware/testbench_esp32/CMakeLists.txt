@@ -13,4 +13,5 @@ target_sources(app PRIVATE
     src/dac_service.c
     src/uart_service.c
     src/pwm_service.c
+    src/spi_service.c
 )

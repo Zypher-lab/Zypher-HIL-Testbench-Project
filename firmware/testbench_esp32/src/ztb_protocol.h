@@ -17,8 +17,6 @@ typedef enum {
     ZTB_CMD_UART_SEND_EXPECT,
     ZTB_CMD_PWM_WRITE,
     ZTB_CMD_PWM_READ_WITH_TOLERANCE,
-    ZTB_CMD_SPI_WRITE,
-    ZTB_CMD_SPI_READ,
     ZTB_CMD_SPI_SEND_EXPECT,
 } ztb_command_type_t;
 

@@ -6,6 +6,7 @@
 #include "dac_service.h"
 #include "uart_service.h"
 #include "pwm_service.h"
+#include "spi_service.h"
 
 #define LINE_BUF_SIZE     128
 #define RESPONSE_BUF_SIZE 160
@@ -17,32 +18,30 @@ int main(void)
     ztb_command_t command;
     ztb_response_t response;
 
-    if (uart_transport_init() != 0)
-    {
-        return 0;
-    }
+    if (uart_transport_init() != 0) return 0;
 
-    if (gpio_service_init() != 0)
-    {
+    if (gpio_service_init() != 0) {
         uart_transport_send_line("ZTB|status=FAIL|err=GPIO_INIT_FAILED\r\n");
         return 0;
     }
 
-    if (dac_service_init() != 0)
-    {
+    if (dac_service_init() != 0) {
         uart_transport_send_line("ZTB|status=FAIL|err=DAC_INIT_FAILED\r\n");
         return 0;
     }
 
-    if (uart_service_init() != 0)
-    {
+    if (uart_service_init() != 0) {
         uart_transport_send_line("ZTB|status=FAIL|err=UART_INIT_FAILED\r\n");
         return 0;
     }
 
-    if (pwm_service_init() != 0)
-    {
+    if (pwm_service_init() != 0) {
         uart_transport_send_line("ZTB|status=FAIL|err=PWM_INIT_FAILED\r\n");
+        return 0;
+    }
+
+    if (spi_service_init() != 0) {
+        uart_transport_send_line("ZTB|status=FAIL|err=SPI_INIT_FAILED\r\n");
         return 0;
     }
 

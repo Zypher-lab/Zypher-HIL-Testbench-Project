@@ -137,6 +137,25 @@ static void execute_pwm_read_with_tolerance(const ztb_command_t *command,
 }
 
 
+static void execute_spi_send_expect(const ztb_command_t *command,
+                                    ztb_response_t *response)
+{
+    char rx_buffer[64];
+ 
+    bool pass = spi_service_send_expect(command->tx,
+                                        command->expect,
+                                        rx_buffer,
+                                        sizeof(rx_buffer));
+ 
+    if (!pass) {
+        ztb_make_fail_response(response, command->seq, "SPI_MISMATCH");
+        response->has_rx = true;
+        strncpy(response->rx, rx_buffer, sizeof(response->rx) - 1);
+        return;
+    }
+ 
+    ztb_make_uart_rx_response(response, command->seq, rx_buffer);
+}
 
 void test_executor_execute(const ztb_command_t *command,
                            ztb_response_t *response)
@@ -176,6 +195,9 @@ void test_executor_execute(const ztb_command_t *command,
 
     case ZTB_CMD_PWM_READ_WITH_TOLERANCE:
         execute_pwm_read_with_tolerance(command, response);
+        break;
+    case ZTB_CMD_SPI_SEND_EXPECT:
+        execute_spi_send_expect(command, response); 
         break;
 
     default:

@@ -59,3 +59,9 @@ PWM Read With Tolerance
     Response Status Should Be OK    ${response}
     RETURN    ${response}
 
+SPI Send Expect
+    [Arguments]    ${seq}    ${tx}    ${expected_rx}
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=SPI_SEND_EXPECT|tx=${tx}|expect=${expected_rx}    ${seq}
+    Response Status Should Be OK    ${response}
+    Should Contain    ${response}    rx=${expected_rx}
+    RETURN    ${response}
