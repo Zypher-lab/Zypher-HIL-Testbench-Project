@@ -10,23 +10,28 @@
 #include <zephyr/dt-bindings/pinctrl/esp32-pinctrl.h>
 
 &pinctrl {
-
-mcpwm0_default: mcpwm0_default {
-    group1 {
-        pinmux = <MCPWM0_OUT0A_GPIO32>;
-        output-enable;
-    };
-    group2 {
-        pinmux = <MCPWM0_CAP0_GPIO4>;
+    ledc0_pwm_out: ledc0_pwm_out {
+        group1 {
+            pinmux = <LEDC_CH0_GPIO32>;
+            output-enable;
+        };
     };
 };
 
-};
-
-&mcpwm0 {
+&ledc0 {
     status = "okay";
-    pinctrl-0 = <&mcpwm0_default>;
+    pinctrl-0 = <&ledc0_pwm_out>;
     pinctrl-names = "default";
-    prescale = <255>;
-    prescale-timer0 = <103>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel0@0 {
+        reg = <0x0>;
+        timer = <0>;
+    };
+
+};
+
+&gpio0 {
+    status = "okay";
 };

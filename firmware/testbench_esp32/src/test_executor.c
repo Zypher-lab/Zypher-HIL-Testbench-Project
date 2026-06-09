@@ -106,63 +106,37 @@ static void execute_uart_send_expect(const ztb_command_t *command,
     ztb_make_uart_rx_response(response, command->seq, rx_buffer);
 }
 
-static void execute_pwm_write(const ztb_command_t *command,
-                              ztb_response_t *response)
+static void execute_pwm_write(const ztb_command_t *command, ztb_response_t *response)
 {
     bool pass = pwm_service_write(command->ch,
                                   command->frequency,
                                   command->duty_cycle);
-
-    ztb_make_pwm_write_response(response,
-                                command->seq,
-                                pass,
-                                command->duty_cycle,
-                                command->frequency);
+    ztb_make_pwm_write_response(response, command->seq, pass,
+                                command->duty_cycle, command->frequency);
 }
-
-static void execute_pwm_read(const ztb_command_t *command,
-                             ztb_response_t *response)
-{
-    uint32_t measured_freq = 0;
-    uint32_t measured_duty = 0;
-
-    bool pass = pwm_service_read(command->ch,
-                                 command->timeout_ms,
-                                 &measured_freq,
-                                 &measured_duty);
-
-    ztb_make_pwm_read_response(response,
-                               command->seq,
-                               pass,
-                               measured_duty,
-                               measured_freq);
-}
-
+ 
 static void execute_pwm_read_with_tolerance(const ztb_command_t *command,
-                                           ztb_response_t *response)
+                                            ztb_response_t *response)
 {
     uint32_t measured_freq = 0;
     uint32_t measured_duty = 0;
-
+ 
     bool pass = pwm_service_read_with_tolerance(command->ch,
-                                                command->frequency,
-                                                command->duty_cycle,
-                                                command->freq_tol_pct,
-                                                command->duty_tol_pp,
-                                                command->timeout_ms,
-                                   &measured_freq,
-                                   &measured_duty);
-
-    ztb_make_pwm_read_with_tolerance_response(response,
-                                 command->seq,
-                                 pass,
-                                 command->duty_cycle,
-                                 command->frequency,
-                                 measured_duty,
-                                 measured_freq,
-                                 command->freq_tol_pct,
-                                 command->duty_tol_pp);
+                                               command->frequency,
+                                               command->duty_cycle,
+                                               command->freq_tol_pct,
+                                               command->duty_tol_pp,
+                                               command->timeout_ms,
+                                               &measured_freq,
+                                               &measured_duty);
+ 
+    ztb_make_pwm_read_with_tolerance_response(response, command->seq, pass,
+                                 command->duty_cycle, command->frequency,
+                                 measured_duty, measured_freq,
+                                 command->freq_tol_pct, command->duty_tol_pp);
 }
+
+
 
 void test_executor_execute(const ztb_command_t *command,
                            ztb_response_t *response)
@@ -198,10 +172,6 @@ void test_executor_execute(const ztb_command_t *command,
 
     case ZTB_CMD_PWM_WRITE:
         execute_pwm_write(command, response);
-        break;
-
-    case ZTB_CMD_PWM_READ:
-        execute_pwm_read(command, response);
         break;
 
     case ZTB_CMD_PWM_READ_WITH_TOLERANCE:

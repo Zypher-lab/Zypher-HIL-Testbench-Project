@@ -39,9 +39,6 @@ static ztb_command_type_t parse_command_name(const char *cmd)
     if (strcmp(cmd, "PWM_WRITE") == 0) {
         return ZTB_CMD_PWM_WRITE;
     }
-    if (strcmp(cmd, "PWM_READ") == 0) {
-        return ZTB_CMD_PWM_READ;
-    }
     if (strcmp(cmd, "PWM_READ_WITH_TOLERANCE") == 0) {
         return ZTB_CMD_PWM_READ_WITH_TOLERANCE;
     }
@@ -283,7 +280,6 @@ void ztb_format_response_with_cmd(const ztb_response_t *response,
                                   char *out_line, size_t out_size)
 {
     if (cmd->cmd != ZTB_CMD_PWM_WRITE &&
-        cmd->cmd != ZTB_CMD_PWM_READ  &&
         cmd->cmd != ZTB_CMD_PWM_READ_WITH_TOLERANCE) {
         ztb_format_response(response, out_line, out_size);
         return;
@@ -300,12 +296,6 @@ void ztb_format_response_with_cmd(const ztb_response_t *response,
                 response->frequency_expected,  response->duty_cycle_expected,
                 response->frequency_measured,  response->duty_cycle_measured,
                 response->freq_tol_pct,        response->duty_tol_pp);
-        } else if (cmd->cmd == ZTB_CMD_PWM_READ) {
-            snprintf(out_line, out_size,
-                "ZTB|seq=%d|status=OK|freq_measured=%d|duty_measured=%d\r\n",
-                response->seq,
-                response->frequency_measured,
-                response->duty_cycle_measured);
         } else {
             snprintf(out_line, out_size,
                 "ZTB|seq=%d|status=OK|freq_set=%d|duty_set=%d\r\n",
@@ -324,13 +314,6 @@ void ztb_format_response_with_cmd(const ztb_response_t *response,
                 response->frequency_expected,  response->duty_cycle_expected,
                 response->frequency_measured,  response->duty_cycle_measured,
                 response->freq_tol_pct,        response->duty_tol_pp,
-                response->err);
-        } else if (cmd->cmd == ZTB_CMD_PWM_READ) {
-            snprintf(out_line, out_size,
-                "ZTB|seq=%d|status=FAIL|freq_measured=%d|duty_measured=%d|err=%s\r\n",
-                response->seq,
-                response->frequency_measured,
-                response->duty_cycle_measured,
                 response->err);
         } else {
             snprintf(out_line, out_size,

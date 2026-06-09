@@ -89,7 +89,7 @@ class TestbenchSerial:
     def __init__(self):
         self.ser = None
 
-    def open_testbench(self, port="/dev/ttyUSB0", baudrate=115200, timeout=2.0):
+    def open_testbench(self, port="/dev/ttyUSB1", baudrate=115200, timeout=2.0):
         self.ser = serial.Serial(
             port=port,
             baudrate=int(baudrate),

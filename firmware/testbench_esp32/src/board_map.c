@@ -10,7 +10,7 @@ static const board_gpio_channel_t gpio_channels[] = {
 
 static const board_pwm_channel_t pwm_channels[] = {
     { .name = "PWM_OUT1", .pin = 32, .direction = BOARD_PWM_OUTPUT },
-    { .name = "PWM_IN1", .pin = 4, .direction = BOARD_PWM_INPUT },
+    { .name = "PWM_IN1",  .pin = 4,  .direction = BOARD_PWM_INPUT  },
 };
 
 bool board_map_get_gpio_channel(const char *name, board_gpio_channel_t *out_channel)
