@@ -137,23 +137,6 @@ ZTB|seq=9|status=FAIL|err=PWM_WRITE_FAIL
 
 ---
 
-### PWM_READ
-Measure a PWM signal on a capture pin and return the measured values.
-Use this to inspect what a DUT is outputting without pass/fail validation.
-```text
-ZTB|seq=10|cmd=PWM_READ|ch=PWM_IN1|timeout=1000
-```
-Example response:
-```text
-ZTB|seq=10|status=OK|freq_measured=50|duty_measured=90
-```
-Timeout response:
-```text
-ZTB|seq=10|status=FAIL|err=PWM_READ_FAIL
-```
-
----
-
 ### PWM_READ_WITH_TOLERANCE
 Measure a PWM signal on a capture pin and validate it against expected values within tolerance.
 Validation happens on the ESP32 — only OK or FAIL is returned.
@@ -175,6 +158,45 @@ ZTB|seq=11|status=FAIL|freq_expected=50|duty_expected=90|freq_measured=35|duty_m
 
 ---
 
+### SPI_WRITE
+Send a command byte over SPI to a slave device.
+Write-only — no response data is read back from MISO.
+Use this to send configuration commands to a DUT SPI slave and validate the effect through a GPIO or other peripheral.
+
+Supported commands:
+- `LED_ON`  → sends 0x01
+- `LED_OFF` → sends 0x00
+
+```text
+ZTB|seq=12|cmd=SPI_WRITE|tx=LED_ON
+```
+Example pass response:
+```text
+ZTB|seq=12|status=OK
+```
+Example fail response:
+```text
+ZTB|seq=12|status=FAIL|err=SPI_WRITE_FAILED
+```
+---
+### SPI_SEND_EXPECT
+Send bytes over SPI and validate the received response.
+Full duplex — ESP32 clocks out `tx` while simultaneously reading `rx`, then compares against `expect`.
+Use this for loopback tests (MOSI wired to MISO) or bidirectional SPI devices.
+
+```text
+ZTB|seq=13|cmd=SPI_SEND_EXPECT|tx=PING|expect=PING
+```
+Example pass response:
+```text
+ZTB|seq=13|status=OK|rx=PING
+```
+Example fail response:
+```text
+ZTB|seq=13|status=FAIL|rx=PONG|err=SPI_MISMATCH
+```
+---
+
 ## Current Logical Resources
 
 | Resource  | Type           | Physical Pin                    |
@@ -187,9 +209,12 @@ ZTB|seq=11|status=FAIL|freq_expected=50|duty_expected=90|freq_measured=35|duty_m
 | DAC_OUT2  | DAC output     | ESP32 GPIO26                    |
 | UART_CH1  | UART           | ESP32 GPIO17 TXD2 / GPIO16 RXD2 |
 | PWM_OUT1  | PWM output     | ESP32 GPIO32                    |
-| PWM_OUT2  | PWM output     | ESP32 GPIO33                    |
 | PWM_IN1   | PWM input      | ESP32 GPIO34                    |
-| PWM_IN2   | PWM input      | ESP32 GPIO35                    |
+| PWM_IN2   | PWM input      | ESP32 GPIO2                     |
+| SPI_CLK     | GPIO18 | ESP32 → STM32-2 | STM32-2 PA5 (SCK)   | SPI        |
+| SPI_MOSI    | GPIO23 | ESP32 → STM32-2 | STM32-2 PA7 (MOSI)  | SPI        |
+| SPI_MISO    | GPIO19 | STM32-2 → ESP32 | STM32-2 PA6 (MISO)  | SPI        |
+| SPI_CS      | GPIO5  | ESP32 → STM32-2 | STM32-2 PA4 (NSS)   | SPI        |
 
 ---
 

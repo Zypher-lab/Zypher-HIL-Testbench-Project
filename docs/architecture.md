@@ -11,9 +11,14 @@ It does not contain hardcoded test cases. Instead, Robot Framework sends ZTB pro
 |---|---|
 | `main.c` | Initializes modules, reads command lines, calls parser/executor, sends responses |
 | `uart_transport.c` | Handles UART RX/TX line-based communication |
+| `wifi_transport.c` | Handles WiFi TCP server RX/TX line-based communication |
 | `ztb_protocol.c` | Parses ZTB command frames and formats responses |
 | `test_executor.c` | Dispatches parsed commands to the correct service |
 | `gpio_service.c` | Executes GPIO write/read/expect operations |
+| `dac_service.c` | Executes DAC voltage output operations |
+| `uart_service.c` | Executes UART write/read/send-expect operations toward DUT |
+| `pwm_service.c` | Executes PWM output via LEDC and PWM capture via GPIO interrupt |
+| `spi_service.c` | Executes SPI write and send-expect operations |
 | `board_map.c` | Maps logical resources such as `DIO_OUT1` to ESP32 physical pins |
 
 ## Dynamic Architecture
@@ -43,11 +48,42 @@ sequenceDiagram
 
     GPIO-->>Executor: operation result
     Executor-->>Main: ztb_response_t
-    Main->>Protocol: ztb_format_response(response)
+    Main->>Protocol: ztb_format_response_with_cmd(response , cmd)
     Protocol-->>Main: response line
     Main->>UART: uart_transport_send_line(response)
     UART-->>Robot: ZTB response line
 ````
+## WiFi Transport Architecture
+```mermaid
+sequenceDiagram
+    participant Robot as Robot Framework
+    participant TCP as WiFi TCP Transport
+    participant Main as main.c
+    participant Protocol as ztb_protocol
+    participant Executor as test_executor
+    participant Service as gpio/pwm/spi/uart/dac_service
+    participant BoardMap as board_map
+    participant HW as ESP32 GPIO / STM32 DUT
+
+    Note over Robot,TCP: TCP Socket Port 5000 (No cable required)
+
+    Robot->>TCP: TCP send ZTB frame
+    TCP->>Main: wifi_transport_read_line()
+    Main->>Protocol: ztb_parse_frame(line)
+    Protocol-->>Main: ztb_command_t
+    Main->>Executor: test_executor_execute(command)
+    Executor->>Service: service_write/read/expect()
+    Service->>BoardMap: board_map_get_channel(ch)
+    BoardMap-->>Service: physical pin + direction
+    Service->>HW: Drive/read ESP32 pin or DUT peripheral
+    HW-->>Service: actual signal value
+    Service-->>Executor: operation result
+    Executor-->>Main: ztb_response_t
+    Main->>Protocol: ztb_format_response_with_cmd(response , cmd)
+    Protocol-->>Main: response line
+    Main->>TCP: wifi_transport_send_line(response)
+    TCP-->>Robot: TCP send ZTB response line
+```
 
 ## Example GPIO_WRITE Flow
 
