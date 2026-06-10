@@ -15,7 +15,7 @@ TC_1_PWM_MATCH_100HZ_50PCT
     Sleep                      0.2
     PWM Read With Tolerance    17    PWM_IN2     100    50    2000    10    5
 
-TC_2PWM_MATCH_200HZ_75PCT
+TC_2_PWM_MATCH_200HZ_75PCT
     [Documentation]    ESP32 outputs 200Hz 75% → DUT matches → ESP32 validates
     PWM Write                  18    PWM_OUT1    200    75
     Sleep                      0.2
