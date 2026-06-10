@@ -1,0 +1,60 @@
+#include <zephyr/dt-bindings/adc/adc.h>
+
+/ {
+    aliases {
+        pwm-fan   = &pwm1;
+        pwm-match = &pwm2;
+    };
+};
+
+&usart2 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+    pinctrl-names = "default";
+};
+
+&timers1 {
+    status = "okay";
+    st,prescaler = <83>;
+    pwm1: pwm {
+        status = "okay";
+        pinctrl-0 = <&tim1_ch1_pa8>;
+        pinctrl-names = "default";
+    };
+};
+
+&timers2 {
+    status = "okay";
+    st,prescaler = <83>;
+    pwm2: pwm {
+        status = "okay";
+        pinctrl-0 = <&tim2_ch3_pb10>;
+        pinctrl-names = "default";
+    };
+};
+
+&timers3 {
+    status = "okay";
+    st,prescaler = <83>;
+};
+
+&adc1 {
+    status = "okay";
+    pinctrl-0 = <&adc1_in0_pa0>;
+    pinctrl-names = "default";
+    st,adc-clock-source = "SYNC";
+    st,adc-prescaler = <2>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel@0 {
+        reg = <0>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+};
+
+

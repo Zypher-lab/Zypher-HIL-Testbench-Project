@@ -34,6 +34,23 @@ static ztb_command_type_t parse_command_name(const char *cmd)
     if (strcmp(cmd, "UART_SEND_EXPECT") == 0) {
         return ZTB_CMD_UART_SEND_EXPECT;
     }
+    
+     /*My add*/
+    if (strcmp(cmd, "PWM_WRITE") == 0) {
+        return ZTB_CMD_PWM_WRITE;
+    }
+    if (strcmp(cmd, "PWM_READ_WITH_TOLERANCE") == 0) {
+        return ZTB_CMD_PWM_READ_WITH_TOLERANCE;
+    }
+    if (strcmp(cmd, "SPI_SEND_EXPECT") == 0) {
+        return ZTB_CMD_SPI_SEND_EXPECT;
+    }
+    if (strcmp(cmd, "SPI_WRITE") == 0) {
+        return ZTB_CMD_SPI_WRITE;
+    }
+    if(strcmp(cmd, "TRANSPORT_SWITCH") == 0) {
+        return ZTB_CMD_TRANSPORT_SWITCH;
+    }
 
     return ZTB_CMD_UNKNOWN;
 }
@@ -77,10 +94,22 @@ bool ztb_parse_frame(char *line, ztb_command_t *out_cmd)
             out_cmd->timeout_ms = atoi(value);
         } else if (strcmp(key, "mv") == 0) {
             out_cmd->mv = atoi(value);
-        } else if (strcmp(key, "tx") == 0) {
+        } else if (strcmp(key, "mode") == 0) strncpy(out_cmd->ch, value, sizeof(out_cmd->ch) - 1);
+        else if (strcmp(key, "tx") == 0) {
             strncpy(out_cmd->tx, value, sizeof(out_cmd->tx) - 1);
         } else if (strcmp(key, "expect") == 0) {
             strncpy(out_cmd->expect, value, sizeof(out_cmd->expect) - 1);
+        }
+        else if (strcmp(key, "duty_cycle") == 0) {
+            out_cmd->duty_cycle = atoi(value);
+        }else if (strcmp(key, "frequency") == 0) {
+            out_cmd->frequency = atoi(value);
+        }
+        else if (strcmp(key, "freq_tol_pct") == 0) {
+            out_cmd->freq_tol_pct = atoi(value);
+        }
+        else if (strcmp(key, "duty_tol_pp") == 0) {
+            out_cmd->duty_tol_pp = atoi(value);
         }
     }
 
@@ -172,11 +201,12 @@ void ztb_format_response(const ztb_response_t *response,
                      "ZTB|seq=%d|status=OK|rx=%s\r\n",
                      response->seq,
                      response->rx);
-        } else {
+        }else  {
             snprintf(out_line, out_size,
                      "ZTB|seq=%d|status=OK\r\n",
                      response->seq);
         }
+
     } else {
         if (response->has_expected_actual) {
             snprintf(out_line, out_size,
@@ -191,11 +221,108 @@ void ztb_format_response(const ztb_response_t *response,
                      response->seq,
                      response->rx,
                      response->err);
-        } else {
+        } 
+        else {
             snprintf(out_line, out_size,
                      "ZTB|seq=%d|status=FAIL|err=%s\r\n",
                      response->seq,
                      response->err);
+        }
+    }
+}
+
+
+
+/* PWM response functions */
+void ztb_make_pwm_write_response(ztb_response_t *response,
+                                 int seq, bool pass,
+                                 int duty_cycle_set, int frequency_set)
+{
+    memset(response, 0, sizeof(*response));
+    response->seq                 = seq;
+    response->status              = pass ? ZTB_STATUS_OK : ZTB_STATUS_FAIL;
+    response->duty_cycle_expected = duty_cycle_set;
+    response->frequency_expected  = frequency_set;
+    if (!pass) strncpy(response->err, "PWM_WRITE_FAIL", sizeof(response->err) - 1);
+}
+ 
+void ztb_make_pwm_read_response(ztb_response_t *response,
+                                int seq, bool pass,
+                                int duty_cycle_measured, int frequency_measured)
+{
+    memset(response, 0, sizeof(*response));
+    response->seq                 = seq;
+    response->status              = pass ? ZTB_STATUS_OK : ZTB_STATUS_FAIL;
+    response->duty_cycle_measured = duty_cycle_measured;
+    response->frequency_measured  = frequency_measured;
+    if (!pass) strncpy(response->err, "PWM_READ_FAIL", sizeof(response->err) - 1);
+}
+ 
+void ztb_make_pwm_read_with_tolerance_response(ztb_response_t *response,
+                                  int seq, bool pass,
+                                  int duty_cycle_expected, int frequency_expected,
+                                  int duty_cycle_measured, int frequency_measured,
+                                  int freq_tol_pct, int duty_tol_pp)
+{
+    memset(response, 0, sizeof(*response));
+    response->seq                 = seq;
+    response->status              = pass ? ZTB_STATUS_OK : ZTB_STATUS_FAIL;
+    response->duty_cycle_expected = duty_cycle_expected;
+    response->frequency_expected  = frequency_expected;
+    response->duty_cycle_measured = duty_cycle_measured;
+    response->frequency_measured  = frequency_measured;
+    response->freq_tol_pct        = freq_tol_pct;
+    response->duty_tol_pp         = duty_tol_pp;
+    if (!pass) strncpy(response->err, "PWM_MISMATCH", sizeof(response->err) - 1);
+}
+
+void ztb_format_response_with_cmd(const ztb_response_t *response,
+                                  const ztb_command_t  *cmd,
+                                  char *out_line, size_t out_size)
+{
+    if (cmd->cmd != ZTB_CMD_PWM_WRITE &&
+        cmd->cmd != ZTB_CMD_PWM_READ_WITH_TOLERANCE) {
+        ztb_format_response(response, out_line, out_size);
+        return;
+    }
+ 
+    if (response->status == ZTB_STATUS_OK) {
+        if (cmd->cmd == ZTB_CMD_PWM_READ_WITH_TOLERANCE) {
+            snprintf(out_line, out_size,
+                "ZTB|seq=%d|status=OK"
+                "|freq_expected=%d|duty_expected=%d"
+                "|freq_measured=%d|duty_measured=%d"
+                "|freq_tol_pct=%d|duty_tol_pp=%d\r\n",
+                response->seq,
+                response->frequency_expected,  response->duty_cycle_expected,
+                response->frequency_measured,  response->duty_cycle_measured,
+                response->freq_tol_pct,        response->duty_tol_pp);
+        } else {
+            snprintf(out_line, out_size,
+                "ZTB|seq=%d|status=OK|freq_set=%d|duty_set=%d\r\n",
+                response->seq,
+                response->frequency_expected,
+                response->duty_cycle_expected);
+        }
+    } else {
+        if (cmd->cmd == ZTB_CMD_PWM_READ_WITH_TOLERANCE) {
+            snprintf(out_line, out_size,
+                "ZTB|seq=%d|status=FAIL"
+                "|freq_expected=%d|duty_expected=%d"
+                "|freq_measured=%d|duty_measured=%d"
+                "|freq_tol_pct=%d|duty_tol_pp=%d|err=%s\r\n",
+                response->seq,
+                response->frequency_expected,  response->duty_cycle_expected,
+                response->frequency_measured,  response->duty_cycle_measured,
+                response->freq_tol_pct,        response->duty_tol_pp,
+                response->err);
+        } else {
+            snprintf(out_line, out_size,
+                "ZTB|seq=%d|status=FAIL|freq_set=%d|duty_set=%d|err=%s\r\n",
+                response->seq,
+                response->frequency_expected,
+                response->duty_cycle_expected,
+                response->err);
         }
     }
 }

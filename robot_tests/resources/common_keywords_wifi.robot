@@ -1,5 +1,5 @@
 *** Settings ***
-Library    ../libraries/TestbenchSerial.py
+Library    ../libraries/TestbenchWifi.py
 
 *** Keywords ***
 Send GPIO Write
@@ -41,21 +41,22 @@ UART Send Expect
     Response Status Should Be OK    ${response}
     Should Contain    ${response}    rx=${expected_rx}
     RETURN    ${response}
+
 PWM Write
     [Arguments]    ${seq}    ${channel}    ${frequency}    ${duty_cycle}
     ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_WRITE|ch=${channel}|frequency=${frequency}|duty_cycle=${duty_cycle}    ${seq}
     Response Status Should Be OK    ${response}
     RETURN    ${response}
 
-PWM Read
-    [Arguments]    ${seq}    ${channel}    ${timeout}=1000
-    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_READ|ch=${channel}|timeout=${timeout}    ${seq}
+PWM Read With Tolerance
+    [Arguments]    ${seq}    ${channel}    ${frequency}    ${duty_cycle}    ${timeout}=2000    ${freq_tol_pct}=2    ${duty_tol_pp}=2
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_READ_WITH_TOLERANCE|ch=${channel}|frequency=${frequency}|duty_cycle=${duty_cycle}|freq_tol_pct=${freq_tol_pct}|duty_tol_pp=${duty_tol_pp}|timeout=${timeout}    ${seq}
     Response Status Should Be OK    ${response}
     RETURN    ${response}
 
-PWM Read With Tolerance
-    [Arguments]    ${seq}    ${channel}    ${frequency}    ${duty_cycle}    ${timeout}=1000    ${freq_tol_pct}=2    ${duty_tol_pp}=2
-    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=PWM_READ_WITH_TOLERANCE|ch=${channel}|frequency=${frequency}|duty_cycle=${duty_cycle}|freq_tol_pct=${freq_tol_pct}|duty_tol_pp=${duty_tol_pp}|timeout=${timeout}    ${seq}
+SPI Write
+    [Arguments]    ${seq}    ${tx}
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=SPI_WRITE|tx=${tx}    ${seq}
     Response Status Should Be OK    ${response}
     RETURN    ${response}
 
@@ -65,13 +66,6 @@ SPI Send Expect
     Response Status Should Be OK    ${response}
     Should Contain    ${response}    rx=${expected_rx}
     RETURN    ${response}
-SPI Write
-    [Arguments]    ${seq}    ${tx}
-    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=SPI_WRITE|tx=${tx}    ${seq}
-    Response Status Should Be OK    ${response}
-    RETURN    ${response}
-# Add this keyword to common_keywords.robot and common_keywords_wifi.robot
-
 Switch Transport
     [Arguments]    ${seq}    ${mode}
     [Documentation]    Switch transport mode (UART or WIFI) and reboot ESP32.

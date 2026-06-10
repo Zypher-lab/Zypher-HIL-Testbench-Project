@@ -18,8 +18,16 @@ The physical pin mapping is owned by the ESP32 testbench firmware.
 | DAC_OUT1 | DAC | Output | GPIO25 | Analog voltage stimulus output 1 |
 | DAC_OUT2 | DAC | Output | GPIO26 | Analog voltage stimulus output 2 |
 | UART_CH1 | UART | TX/RX | GPIO17 TXD2 / GPIO16 RXD2 | UART E2E communication channel |
+| PWM_OUT1 | PWM | Output | GPIO32 | PWM stimulus output (LEDC CH0, 1Hz–100kHz) |
+| PWM_IN1 | PWM | Input | GPIO4 | PWM capture input 1 (GPIO interrupt, 20Hz–1500Hz) |
+| PWM_IN2 | PWM | Input | GPIO2 | PWM capture input 2 (GPIO interrupt, 20Hz–1500Hz) |
+| SPI_CS | SPI | Output | GPIO5 | SPI chip select (active low) |
+| SPI_SCK | SPI | Output | GPIO18 | SPI clock (500kHz) |
+| SPI_MOSI | SPI | Output | GPIO23 | SPI master data out |
+| SPI_MISO | SPI | Input | GPIO19 | SPI master data in |
 
 ---
+
 
 ## Validated Testbench Capabilities
 

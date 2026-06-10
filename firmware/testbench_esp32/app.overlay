@@ -6,3 +6,64 @@
     status = "okay";
     current-speed = <115200>;
 };
+
+#include <zephyr/dt-bindings/pinctrl/esp32-pinctrl.h>
+
+&pinctrl {
+
+    ledc0_pwm_out: ledc0_pwm_out {
+        group1 {
+            pinmux = <LEDC_CH0_GPIO32>;
+            output-enable;
+        };
+    };
+    
+    spim2_custom: spim2_custom {
+        group1 {
+            pinmux = <SPIM2_MISO_GPIO19>,
+                     <SPIM2_SCLK_GPIO18>,
+                     <SPIM2_CSEL_GPIO5>;
+        };
+        group2 {
+            pinmux = <SPIM2_MOSI_GPIO23>;
+            output-low;
+        };
+    };
+
+};
+
+&ledc0 {
+    status = "okay";
+    pinctrl-0 = <&ledc0_pwm_out>;
+    pinctrl-names = "default";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel0@0 {
+        reg = <0x0>;
+        timer = <0>;
+    };
+
+};
+
+&spi2 {
+    status = "okay";
+    pinctrl-0 = <&spim2_custom>;
+    pinctrl-names = "default";
+    #address-cells = <1>;
+    #size-cells = <0>;
+    cs-gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+    cs-setup-time = <20>;
+    cs-hold-time  = <20>;
+
+    spi_dev0: spi_dev@0 {
+        compatible = "vnd,spi-device";
+        reg = <0>;
+        spi-max-frequency = <500000>;
+    };
+
+};
+
+&gpio0 {
+    status = "okay";
+};
