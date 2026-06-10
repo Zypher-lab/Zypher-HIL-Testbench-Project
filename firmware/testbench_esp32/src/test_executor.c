@@ -156,7 +156,15 @@ static void execute_spi_send_expect(const ztb_command_t *command,
  
     ztb_make_uart_rx_response(response, command->seq, rx_buffer);
 }
-
+static void execute_spi_write(const ztb_command_t *command,
+                              ztb_response_t *response)
+{
+    if (!spi_service_write(command->tx)) {
+        ztb_make_fail_response(response, command->seq, "SPI_WRITE_FAILED");
+        return;
+    }
+    ztb_make_ok_response(response, command->seq);
+}
 void test_executor_execute(const ztb_command_t *command,
                            ztb_response_t *response)
 {
@@ -199,9 +207,13 @@ void test_executor_execute(const ztb_command_t *command,
     case ZTB_CMD_SPI_SEND_EXPECT:
         execute_spi_send_expect(command, response); 
         break;
+    case ZTB_CMD_SPI_WRITE:
+        execute_spi_write(command, response);
+        break;
 
     default:
         ztb_make_fail_response(response, command->seq, "UNKNOWN_COMMAND");
         break;
     }
 }
+

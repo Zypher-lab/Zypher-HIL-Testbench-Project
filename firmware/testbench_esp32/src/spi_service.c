@@ -44,3 +44,18 @@ bool spi_service_send_expect(const char *tx,
 
     return strncmp(out_rx, expect, strlen(expect)) == 0;
 }
+bool spi_service_write(const char *tx)
+{
+    size_t  len    = strlen(tx);
+    uint8_t rx_buf[64] = {0};
+
+    if (len == 0 || len > sizeof(rx_buf)) return false;
+
+    struct spi_buf tx_bufs[] = {{ .buf = (void *)tx, .len = len }};
+    struct spi_buf rx_bufs[] = {{ .buf = rx_buf,     .len = len }};
+
+    struct spi_buf_set tx_set = { .buffers = tx_bufs, .count = 1 };
+    struct spi_buf_set rx_set = { .buffers = rx_bufs, .count = 1 };
+
+    return spi_transceive_dt(&spi_dev, &tx_set, &rx_set) == 0;
+}

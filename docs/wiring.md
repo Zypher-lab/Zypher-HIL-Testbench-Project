@@ -129,9 +129,7 @@ STM32-1 GND → STM32-2 GND
 | UART TX     | GPIO17 | ESP32 → STM32-1 | STM32-1 PA3 (RX)    | UART       |
 | UART RX     | GPIO16 | STM32-1 → ESP32 | STM32-1 PA2 (TX)    | UART       |
 | PWM_OUT1    | GPIO32 | ESP32 → STM32-2 | STM32-2 PA0 (TIM2)  | LEDC       |
-| PWM_OUT2    | GPIO33 | ESP32 → STM32-2 | STM32-2 PA1 (TIM2)  | LEDC       |
-| PWM_IN1     | GPIO34 | STM32-2 → ESP32 | STM32-2 PA8 (TIM1)  | MCPWM      |
-| PWM_IN2     | GPIO35 | STM32-2 → ESP32 | STM32-2 PB4 (TIM3)  | MCPWM      |
+| PWM_IN1     | GPIO4  | STM32-2 → ESP32 | STM32-2 PA8 (TIM1)  | MCPWM      |
 | SPI_CLK     | GPIO18 | ESP32 → STM32-2 | STM32-2 PA5 (SCK)   | SPI        |
 | SPI_MOSI    | GPIO23 | ESP32 → STM32-2 | STM32-2 PA7 (MOSI)  | SPI        |
 | SPI_MISO    | GPIO19 | STM32-2 → ESP32 | STM32-2 PA6 (MISO)  | SPI        |
@@ -204,9 +202,7 @@ HELLO → ACK
 | ESP32 Resource | ESP32 Pin | STM32-2 Pin    | Direction       | Peripheral             |
 |----------------|-----------|----------------|-----------------|------------------------|
 | PWM_OUT1       | GPIO32    | PA0 (TIM2 CH1) | ESP32 → STM32-2 | LEDC out → TIM2 input  |
-| PWM_OUT2       | GPIO33    | PA1 (TIM2 CH2) | ESP32 → STM32-2 | LEDC out → TIM2 input  |
-| PWM_IN1        | GPIO34    | PA8 (TIM1 CH1) | STM32-2 → ESP32 | TIM1 out → MCPWM input |
-| PWM_IN2        | GPIO35    | PB4 (TIM3 CH1) | STM32-2 → ESP32 | TIM3 out → MCPWM input |
+| PWM_IN2        | GPIO4    | PB4 (TIM3 CH1) | STM32-2 → ESP32 | TIM3 out → MCPWM input |
 
 PWM test cases:
 ```

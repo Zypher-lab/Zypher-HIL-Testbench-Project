@@ -10,5 +10,5 @@ bool spi_service_send_expect(const char *tx,
                              const char *expect,
                              char       *out_rx,
                              size_t      out_rx_size);
-
+bool spi_service_write(const char *tx);
 #endif

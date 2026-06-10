@@ -65,3 +65,8 @@ SPI Send Expect
     Response Status Should Be OK    ${response}
     Should Contain    ${response}    rx=${expected_rx}
     RETURN    ${response}
+SPI Write
+    [Arguments]    ${seq}    ${tx}
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=SPI_WRITE|tx=${tx}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}

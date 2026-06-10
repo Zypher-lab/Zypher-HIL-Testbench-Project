@@ -45,6 +45,9 @@ static ztb_command_type_t parse_command_name(const char *cmd)
     if (strcmp(cmd, "SPI_SEND_EXPECT") == 0) {
         return ZTB_CMD_SPI_SEND_EXPECT;
     }
+    if (strcmp(cmd, "SPI_WRITE") == 0) {
+        return ZTB_CMD_SPI_WRITE;
+    }
 
     return ZTB_CMD_UNKNOWN;
 }
