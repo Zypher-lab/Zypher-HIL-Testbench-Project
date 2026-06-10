@@ -206,57 +206,77 @@ ZTB|seq=<N>|status=FAIL|err=<ERROR_CODE>
 ```
 ZephyrHIL/
 ├── firmware/
-│   ├── testbench_esp32/            ESP32 testbench firmware
-│   │   ├── src/
-│   │   │   ├── main.c              Boot, transport selection, ZTB loop
-│   │   │   ├── uart_transport.c    UART read/write line
-│   │   │   ├── wifi_transport.c    WiFi TCP server read/write line
-│   │   │   ├── ztb_protocol.c      Frame parser and response formatter
-│   │   │   ├── test_executor.c     Routes commands to services
-│   │   │   ├── gpio_service.c      GPIO write/read/expect
-│   │   │   ├── dac_service.c       DAC voltage output
-│   │   │   ├── uart_service.c      UART send/receive to DUT
-│   │   │   ├── pwm_service.c       LEDC output + GPIO capture
-│   │   │   ├── spi_service.c       SPI master write and loopback
-│   │   │   └── board_map.c         Logical name to physical pin mapping
-│   │   ├── app.overlay             Devicetree pin assignments
-│   │   └── prj.conf                Kconfig options
 │   │
-│   └── dut_stm32_3/                STM32 DUT3 full demo firmware
-│       ├── src/
-│       │   ├── main.c              Init all modules, main loop
-│       │   ├── switch_led.c        PB0 mirrors to PB1
-│       │   ├── fan_pwm.c           ADC PA0 → TIM1 PWM duty
-│       │   ├── uart_echo.c         USART2 interrupt echo
-│       │   ├── pwm_match.c         Capture PB4 → reproduce on PB10
-│       │   └── spi_cmd.c           SPI1 slave → drive PB5
-│       ├── boards/
-│       │   └── blackpill_f401cc.overlay
-│       └── prj.conf
+│   ├── dut_stm32/                  DUT1 — GPIO, DAC, UART validation
+│   │   └── src/
+│   │       ├── dio_app.c           GPIO mirror and stimulus
+│   │       ├── adc_app.c           ADC read from DAC voltage
+│   │       └── uart_app.c          UART receive and respond
+│   │
+│   ├── dut_stm32_2/                DUT2 — PWM and SPI validation
+│   │   └── src/
+│   │       └── spi_slave.c         SPI slave receive
+│   │
+│   ├── dut_stm32_3/                DUT3 — Full demo, all peripherals
+│   │   └── src/
+│   │       ├── main.c              Init all modules, main loop
+│   │       ├── switch_led.c        PB0 input mirrors to PB1 output
+│   │       ├── fan_pwm.c           ADC PA0 → TIM1 PWM duty at 1kHz
+│   │       ├── uart_echo.c         USART2 interrupt-driven echo
+│   │       ├── pwm_match.c         Capture PB4 → reproduce on PB10
+│   │       └── spi_cmd.c           SPI1 slave → drive PB5 HIGH/LOW
+│   │
+│   └── testbench_esp32/            ESP32 testbench firmware
+│       └── src/
+│           ├── main.c              Boot, transport selection, ZTB loop
+│           ├── uart_transport.c    UART read/write line
+│           ├── wifi_transport.c    WiFi TCP server read/write line
+│           ├── ztb_protocol.c      Frame parser and response formatter
+│           ├── test_executor.c     Routes commands to services
+│           ├── gpio_service.c      GPIO write/read/expect
+│           ├── dac_service.c       DAC voltage output
+│           ├── uart_service.c      UART send/receive to DUT
+│           ├── pwm_service.c       LEDC output + GPIO interrupt capture
+│           ├── spi_service.c       SPI master write and loopback
+│           └── board_map.c         Logical name to physical pin mapping
 │
 ├── robot_tests/
 │   ├── libraries/
-│   │   ├── TestbenchSerial.py      UART transport (serial port)
-│   │   └── TestbenchWifi.py        WiFi transport (TCP socket)
+│   │   ├── TestbenchSerial.py      UART transport library
+│   │   └── TestbenchWifi.py        WiFi TCP transport library
 │   ├── resources/
-│   │   ├── common_keywords.robot   All Robot Framework keywords
+│   │   ├── common_keywords.robot
 │   │   └── common_keywords_wifi.robot
 │   └── tests/
-│       ├── 01_gpio_tests.robot
-│       ├── 02_pwm_tests.robot
-│       ├── 04_adc_dac_tests.robot
-│       ├── 06_uart_tests.robot
-│       ├── 07_spi_tests.robot
-│       ├── 08_dut3_demo.robot      Full DUT3 demo — 11 test cases
-│       └── 09_wifi_regression.robot
+│       ├── 01_gpio_tests.robot     DUT1 — GPIO tests
+│       ├── 02_pwm_test.robot       DUT2 — PWM tests
+│       ├── 03_spi_test.robot       DUT2 — SPI tests
+│       ├── 04_adc_dac_tests.robot  DUT1 — ADC/DAC tests
+│       ├── 05_dac_out2_tests.robot DUT1 — DAC channel 2 tests
+│       ├── 06_uart_tests.robot     DUT1 — UART tests
+│       ├── 08_dut3_demo.robot      DUT3 — Full demo, 11 test cases
+│       └── 09_wifi_regression.robot WiFi transport regression
+│
+├── docs/                           Architecture, wiring, protocol docs
+│   └── saleae_validation/          Logic analyzer captures for validation
 │
 ├── scripts/
 │   ├── switch_to_uart.py           Switch ESP32 to UART mode over WiFi
 │   └── switch_to_wifi.py           Switch ESP32 to WiFi mode over UART
 │
-└── docs/
-    └── architecture.png
+└── results/                        Robot Framework test reports
+    ├── log.html
+    ├── output.xml
+    └── report.html
 ```
+
+### DUT Progression
+
+| DUT | Board | Purpose |
+|-----|-------|---------|
+| DUT1 | STM32 Black Pill | Validate GPIO, DAC, and UART services individually |
+| DUT2 | STM32 Black Pill | Validate PWM output/capture and SPI slave |
+| DUT3 | STM32 Black Pill | Full demo — all peripherals running simultaneously |
 
 ---
 
@@ -410,3 +430,7 @@ DUT3 is a single STM32F401CC board wired to the ESP32 testbench, running multipl
 | Test Automation | Robot Framework · Python |
 | Debugging | OpenOCD · West · picocom |
 | Communication | UART · WiFi TCP · SPI · PWM · DAC · GPIO |
+
+
+
+
