@@ -2,7 +2,8 @@
 
 / {
     aliases {
-        pwm-fan = &pwm1;
+        pwm-fan   = &pwm1;
+        pwm-match = &pwm2;
     };
 };
 
@@ -21,6 +22,21 @@
         pinctrl-0 = <&tim1_ch1_pa8>;
         pinctrl-names = "default";
     };
+};
+
+&timers2 {
+    status = "okay";
+    st,prescaler = <83>;
+    pwm2: pwm {
+        status = "okay";
+        pinctrl-0 = <&tim2_ch3_pb10>;
+        pinctrl-names = "default";
+    };
+};
+
+&timers3 {
+    status = "okay";
+    st,prescaler = <83>;
 };
 
 &adc1 {

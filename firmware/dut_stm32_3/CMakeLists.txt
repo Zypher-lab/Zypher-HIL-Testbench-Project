@@ -7,6 +7,7 @@ target_sources(app PRIVATE
     src/switch_led.c
     src/fan_pwm.c
     src/uart_echo.c
+    src/pwm_match.c
 )
 
 target_include_directories(app PRIVATE src)
