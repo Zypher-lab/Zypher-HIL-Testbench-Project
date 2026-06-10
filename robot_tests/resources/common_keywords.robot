@@ -70,3 +70,13 @@ SPI Write
     ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=SPI_WRITE|tx=${tx}    ${seq}
     Response Status Should Be OK    ${response}
     RETURN    ${response}
+# Add this keyword to common_keywords.robot and common_keywords_wifi.robot
+
+Switch Transport
+    [Arguments]    ${seq}    ${mode}
+    [Documentation]    Switch transport mode (UART or WIFI) and reboot ESP32.
+    ...                After calling this keyword the current connection will drop.
+    ...                Reconnect using the new transport after ~10 seconds.
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=TRANSPORT_SWITCH|ch=${mode}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}

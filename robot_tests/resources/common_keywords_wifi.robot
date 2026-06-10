@@ -66,3 +66,11 @@ SPI Send Expect
     Response Status Should Be OK    ${response}
     Should Contain    ${response}    rx=${expected_rx}
     RETURN    ${response}
+Switch Transport
+    [Arguments]    ${seq}    ${mode}
+    [Documentation]    Switch transport mode (UART or WIFI) and reboot ESP32.
+    ...                After calling this keyword the current connection will drop.
+    ...                Reconnect using the new transport after ~10 seconds.
+    ${response}=    Send ZTB Command    ZTB|seq=${seq}|cmd=TRANSPORT_SWITCH|ch=${mode}    ${seq}
+    Response Status Should Be OK    ${response}
+    RETURN    ${response}

@@ -48,6 +48,9 @@ static ztb_command_type_t parse_command_name(const char *cmd)
     if (strcmp(cmd, "SPI_WRITE") == 0) {
         return ZTB_CMD_SPI_WRITE;
     }
+    if(strcmp(cmd, "TRANSPORT_SWITCH") == 0) {
+        return ZTB_CMD_TRANSPORT_SWITCH;
+    }
 
     return ZTB_CMD_UNKNOWN;
 }
@@ -91,7 +94,8 @@ bool ztb_parse_frame(char *line, ztb_command_t *out_cmd)
             out_cmd->timeout_ms = atoi(value);
         } else if (strcmp(key, "mv") == 0) {
             out_cmd->mv = atoi(value);
-        } else if (strcmp(key, "tx") == 0) {
+        } else if (strcmp(key, "mode") == 0) strncpy(out_cmd->ch, value, sizeof(out_cmd->ch) - 1);
+        else if (strcmp(key, "tx") == 0) {
             strncpy(out_cmd->tx, value, sizeof(out_cmd->tx) - 1);
         } else if (strcmp(key, "expect") == 0) {
             strncpy(out_cmd->expect, value, sizeof(out_cmd->expect) - 1);
