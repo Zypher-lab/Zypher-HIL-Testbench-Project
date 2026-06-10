@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DUT3 — Full HIL Demo Board</title>
+<style>
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --border:    #21262d;
+    --accent:    #58a6ff;
+    --green:     #3fb950;
+    --yellow:    #d29922;
+    --orange:    #f0883e;
+    --purple:    #bc8cff;
+    --red:       #f85149;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --mono:      'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    --sans:      'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 60%, #1a2332 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(88,166,255,.08) 0%, transparent 70%);
+  }
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    margin-bottom: 14px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--muted);
+    max-width: 580px;
+    font-size: 16px;
+  }
+  .badge-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .badge-blue  { color: var(--accent);  border-color: rgba(88,166,255,.35);  background: rgba(88,166,255,.08); }
+  .badge-green { color: var(--green);   border-color: rgba(63,185,80,.35);   background: rgba(63,185,80,.08); }
+  .badge-yel   { color: var(--yellow);  border-color: rgba(210,153,34,.35);  background: rgba(210,153,34,.08); }
+
+  /* ── Layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 40px; }
+
+  .section-title {
+    font-size: 13px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section { margin-bottom: 56px; }
+
+  /* ── Wiring diagram ── */
+  .wiring-grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .board-col {
+    padding: 0;
+  }
+  .board-header {
+    padding: 14px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .board-header.esp { background: rgba(88,166,255,.1); color: var(--accent); }
+  .board-header.stm { background: rgba(63,185,80,.1);  color: var(--green); }
+  .board-header.ctr { background: var(--bg); text-align: center; color: var(--muted); }
+
+  .wire-row {
+    display: contents;
+  }
+  .pin-cell {
+    padding: 9px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pin-cell:last-child { border-bottom: none; }
+  .pin-num {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 52px;
+  }
+  .pin-name { color: var(--text); font-weight: 500; }
+  .pin-desc { color: var(--muted); font-size: 11px; }
+
+  .arrow-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .arrow-cell .arr { color: var(--muted); }
+  .arrow-cell .arr.bidir { color: var(--yellow); }
+
+  .pin-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .tag-gpio  { background: rgba(88,166,255,.15); color: var(--accent); }
+  .tag-dac   { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .tag-uart  { background: rgba(240,136,62,.15); color: var(--orange); }
+  .tag-spi   { background: rgba(188,140,255,.15); color: var(--purple); }
+  .tag-pwm   { background: rgba(63,185,80,.15);  color: var(--green); }
+  .tag-adc   { background: rgba(248,81,73,.15);  color: var(--red); }
+
+  /* ── Pin table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  .mono { font-family: var(--mono); font-size: 12px; }
+  .tbl-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ── Test cases ── */
+  .tc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .tc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .tc-card:hover { border-color: rgba(88,166,255,.4); }
+  .tc-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .tc-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .tc-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .tc-step {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    padding: 3px 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    border-left: 2px solid var(--border);
+  }
+  .tc-step.stimulus  { border-color: var(--accent); color: var(--accent); }
+  .tc-step.action    { border-color: var(--yellow); color: var(--yellow); }
+  .tc-step.validate  { border-color: var(--green);  color: var(--green); }
+  .tc-pass {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--green);
+    background: rgba(63,185,80,.1);
+    border: 1px solid rgba(63,185,80,.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .tc-periph {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .tc-periph span {
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  /* ── Summary bar ── */
+  .summary {
+    display: flex;
+    gap: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .sum-item { display: flex; flex-direction: column; gap: 4px; }
+  .sum-val  { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+  .sum-lbl  { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">Zephyr HIL Testbench · DUT3</div>
+  <h1>Full Demo<br><span>STM32 Black Pill</span></h1>
+  <p>A single STM32F401CC board exercising every peripheral in the testbench — GPIO, DAC/ADC, UART, SPI, and PWM — validated end-to-end by the ESP32 testbench over 11 automated Robot Framework test cases.</p>
+  <div class="badge-row">
+    <span class="badge badge-blue">STM32F401CC</span>
+    <span class="badge badge-green">Zephyr RTOS</span>
+    <span class="badge badge-yel">11 / 11 PASS</span>
+    <span class="badge badge-blue">ESP32 Testbench</span>
+    <span class="badge badge-green">Robot Framework</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Summary -->
+  <div class="summary">
+    <div class="sum-item"><span class="sum-val" style="color:var(--green)">11</span><span class="sum-lbl">Test Cases</span></div>
+    <div class="sum-item"><span class="sum-val" style="color:var(--green)">11</span><span class="sum-lbl">Passing</span></div>
+    <div class="sum-item"><span class="sum-val" style="color:var(--accent)">5</span><span class="sum-lbl">Peripherals</span></div>
+    <div class="sum-item"><span class="sum-val" style="color:var(--yellow)">13</span><span class="sum-lbl">Wires</span></div>
+    <div class="sum-item"><span class="sum-val" style="color:var(--purple)">4</span><span class="sum-lbl">Threads</span></div>
+  </div>
+
+  <!-- Wiring Diagram -->
+  <div class="section">
+    <div class="section-title">Pin Connections — ESP32 ↔ STM32</div>
+    <div class="wiring-grid">
+      <div class="board-col">
+        <div class="board-header esp">ESP32 DevKit</div>
+
+        <div class="pin-cell"><span class="pin-num">GPIO 27</span><span class="pin-name">DIO_OUT1</span><span class="pin-tag tag-gpio">GPIO</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 14</span><span class="pin-name">DIO_IN1</span><span class="pin-tag tag-gpio">GPIO</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 25</span><span class="pin-name">DAC_OUT1</span><span class="pin-tag tag-dac">DAC</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 17</span><span class="pin-name">UART TX</span><span class="pin-tag tag-uart">UART</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 16</span><span class="pin-name">UART RX</span><span class="pin-tag tag-uart">UART</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 5</span><span class="pin-name">SPI CS</span><span class="pin-tag tag-spi">SPI</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 18</span><span class="pin-name">SPI SCK</span><span class="pin-tag tag-spi">SPI</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 23</span><span class="pin-name">SPI MOSI</span><span class="pin-tag tag-spi">SPI</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 32</span><span class="pin-name">PWM_OUT1</span><span class="pin-tag tag-pwm">PWM</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 4</span><span class="pin-name">PWM_IN1</span><span class="pin-tag tag-pwm">PWM</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 2</span><span class="pin-name">PWM_IN2</span><span class="pin-tag tag-pwm">PWM</span></div>
+        <div class="pin-cell"><span class="pin-num">GPIO 22</span><span class="pin-name">DIO_IN2</span><span class="pin-tag tag-gpio">GPIO</span></div>
+        <div class="pin-cell"><span class="pin-num">GND</span><span class="pin-name">Common Ground</span></div>
+      </div>
+
+      <div class="board-col">
+        <div class="board-header ctr">↔</div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">←</span></div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">←</span></div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">→</span></div>
+        <div class="arrow-cell"><span class="arr">←</span></div>
+        <div class="arrow-cell"><span class="arr">←</span></div>
+        <div class="arrow-cell"><span class="arr">←</span></div>
+        <div class="arrow-cell"><span class="arr bidir">—</span></div>
+      </div>
+
+      <div class="board-col">
+        <div class="board-header stm">STM32 Black Pill</div>
+        <div class="pin-cell"><span class="pin-num">PB0</span><span class="pin-name">Switch Input</span><span class="pin-tag tag-gpio">GPIO IN</span></div>
+        <div class="pin-cell"><span class="pin-num">PB1</span><span class="pin-name">LED Output</span><span class="pin-tag tag-gpio">GPIO OUT</span></div>
+        <div class="pin-cell"><span class="pin-num">PA0</span><span class="pin-name">Fan Speed ADC</span><span class="pin-tag tag-adc">ADC1 CH0</span></div>
+        <div class="pin-cell"><span class="pin-num">PA3</span><span class="pin-name">USART2 RX</span><span class="pin-tag tag-uart">UART</span></div>
+        <div class="pin-cell"><span class="pin-num">PA2</span><span class="pin-name">USART2 TX</span><span class="pin-tag tag-uart">UART</span></div>
+        <div class="pin-cell"><span class="pin-num">PA4</span><span class="pin-name">SPI1 NSS</span><span class="pin-tag tag-spi">SPI</span></div>
+        <div class="pin-cell"><span class="pin-num">PA5</span><span class="pin-name">SPI1 SCK</span><span class="pin-tag tag-spi">SPI</span></div>
+        <div class="pin-cell"><span class="pin-num">PA7</span><span class="pin-name">SPI1 MOSI</span><span class="pin-tag tag-spi">SPI</span></div>
+        <div class="pin-cell"><span class="pin-num">PB4</span><span class="pin-name">TIM3 CH1 — PWM In</span><span class="pin-tag tag-pwm">PWM</span></div>
+        <div class="pin-cell"><span class="pin-num">PA8</span><span class="pin-name">TIM1 CH1 — Fan PWM</span><span class="pin-tag tag-pwm">PWM</span></div>
+        <div class="pin-cell"><span class="pin-num">PB10</span><span class="pin-name">TIM2 CH3 — PWM Match</span><span class="pin-tag tag-pwm">PWM</span></div>
+        <div class="pin-cell"><span class="pin-num">PB5</span><span class="pin-name">SPI Command LED</span><span class="pin-tag tag-gpio">GPIO OUT</span></div>
+        <div class="pin-cell"><span class="pin-num">GND</span><span class="pin-name">Common Ground</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pin Function Table -->
+  <div class="section">
+    <div class="section-title">Pin Function Reference</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>STM32 Pin</th>
+            <th>ESP32 Pin</th>
+            <th>Peripheral</th>
+            <th>Direction</th>
+            <th>Function</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">PB0</td>
+            <td class="mono">GPIO27</td>
+            <td><span class="pin-tag tag-gpio">GPIO IN</span></td>
+            <td>ESP32 → STM32</td>
+            <td>Switch simulation — mirrors to PB1</td>
+          </tr>
+          <tr>
+            <td class="mono">PB1</td>
+            <td class="mono">GPIO14</td>
+            <td><span class="pin-tag tag-gpio">GPIO OUT</span></td>
+            <td>STM32 → ESP32</td>
+            <td>LED output — driven by PB0 state</td>
+          </tr>
+          <tr>
+            <td class="mono">PA0</td>
+            <td class="mono">GPIO25</td>
+            <td><span class="pin-tag tag-adc">ADC1 CH0</span></td>
+            <td>ESP32 → STM32</td>
+            <td>Analog fan speed voltage (0–3.3V)</td>
+          </tr>
+          <tr>
+            <td class="mono">PA8</td>
+            <td class="mono">GPIO4</td>
+            <td><span class="pin-tag tag-pwm">TIM1 CH1</span></td>
+            <td>STM32 → ESP32</td>
+            <td>Fan PWM output — duty = ADC% at 1kHz</td>
+          </tr>
+          <tr>
+            <td class="mono">PA3</td>
+            <td class="mono">GPIO17</td>
+            <td><span class="pin-tag tag-uart">USART2 RX</span></td>
+            <td>ESP32 → STM32</td>
+            <td>UART receive — echoes message back</td>
+          </tr>
+          <tr>
+            <td class="mono">PA2</td>
+            <td class="mono">GPIO16</td>
+            <td><span class="pin-tag tag-uart">USART2 TX</span></td>
+            <td>STM32 → ESP32</td>
+            <td>UART transmit — echoed response</td>
+          </tr>
+          <tr>
+            <td class="mono">PA4</td>
+            <td class="mono">GPIO5</td>
+            <td><span class="pin-tag tag-spi">SPI1 NSS</span></td>
+            <td>ESP32 → STM32</td>
+            <td>SPI chip select</td>
+          </tr>
+          <tr>
+            <td class="mono">PA5</td>
+            <td class="mono">GPIO18</td>
+            <td><span class="pin-tag tag-spi">SPI1 SCK</span></td>
+            <td>ESP32 → STM32</td>
+            <td>SPI clock</td>
+          </tr>
+          <tr>
+            <td class="mono">PA7</td>
+            <td class="mono">GPIO23</td>
+            <td><span class="pin-tag tag-spi">SPI1 MOSI</span></td>
+            <td>ESP32 → STM32</td>
+            <td>SPI data — command byte</td>
+          </tr>
+          <tr>
+            <td class="mono">PB5</td>
+            <td class="mono">GPIO22</td>
+            <td><span class="pin-tag tag-gpio">GPIO OUT</span></td>
+            <td>STM32 → ESP32</td>
+            <td>SPI command result — HIGH on LED_ON, LOW on LED_OFF</td>
+          </tr>
+          <tr>
+            <td class="mono">PB4</td>
+            <td class="mono">GPIO32</td>
+            <td><span class="pin-tag tag-pwm">TIM3 CH1</span></td>
+            <td>ESP32 → STM32</td>
+            <td>PWM stimulus input — measured by GPIO ISR</td>
+          </tr>
+          <tr>
+            <td class="mono">PB10</td>
+            <td class="mono">GPIO2</td>
+            <td><span class="pin-tag tag-pwm">TIM2 CH3</span></td>
+            <td>STM32 → ESP32</td>
+            <td>PWM match output — reproduces PB4 signal</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test Cases -->
+  <div class="section">
+    <div class="section-title">Test Cases — 11 / 11 Pass</div>
+    <div class="tc-grid">
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_001</div>
+        <div class="tc-title">Switch ON → LED ON</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 drives GPIO27 HIGH</div>
+          <div class="tc-step action">STM32 PB0 HIGH → mirrors to PB1</div>
+          <div class="tc-step validate">ESP32 reads GPIO14 — expects HIGH</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-gpio">GPIO</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_002</div>
+        <div class="tc-title">Switch OFF → LED OFF</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 drives GPIO27 LOW</div>
+          <div class="tc-step action">STM32 PB0 LOW → mirrors to PB1</div>
+          <div class="tc-step validate">ESP32 reads GPIO14 — expects LOW</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-gpio">GPIO</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_003</div>
+        <div class="tc-title">Fan Half Speed (50%)</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 DAC outputs 1650mV</div>
+          <div class="tc-step action">STM32 ADC reads ~50% → TIM1 PWM duty 50%</div>
+          <div class="tc-step validate">ESP32 GPIO4 captures 1kHz ±10% 50% ±10pp</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-dac">DAC</span><span class="pin-tag tag-adc">ADC</span><span class="pin-tag tag-pwm">PWM</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_004</div>
+        <div class="tc-title">Fan Full Speed (91%)</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 DAC outputs 3000mV</div>
+          <div class="tc-step action">STM32 ADC reads ~91% → TIM1 PWM duty 91%</div>
+          <div class="tc-step validate">ESP32 GPIO4 captures 1kHz 91% ±10pp</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-dac">DAC</span><span class="pin-tag tag-adc">ADC</span><span class="pin-tag tag-pwm">PWM</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_005</div>
+        <div class="tc-title">Fan Low Speed (15%)</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 DAC outputs 500mV</div>
+          <div class="tc-step action">STM32 ADC reads ~15% → TIM1 PWM duty 15%</div>
+          <div class="tc-step validate">ESP32 GPIO4 captures 1kHz 15% ±10pp</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-dac">DAC</span><span class="pin-tag tag-adc">ADC</span><span class="pin-tag tag-pwm">PWM</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_006</div>
+        <div class="tc-title">UART Echo — PING</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 sends "PING" over UART</div>
+          <div class="tc-step action">STM32 USART2 receives and echoes back</div>
+          <div class="tc-step validate">ESP32 receives "PING" — exact match</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-uart">UART</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_007</div>
+        <div class="tc-title">UART Echo — HELLO</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 sends "HELLO" over UART</div>
+          <div class="tc-step action">STM32 USART2 receives and echoes back</div>
+          <div class="tc-step validate">ESP32 receives "HELLO" — exact match</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-uart">UART</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_008</div>
+        <div class="tc-title">SPI Write LED ON</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 sends 0x01 over SPI1</div>
+          <div class="tc-step action">STM32 SPI slave receives → sets PB5 HIGH</div>
+          <div class="tc-step validate">ESP32 reads GPIO22 — expects HIGH</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-spi">SPI</span><span class="pin-tag tag-gpio">GPIO</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_009</div>
+        <div class="tc-title">SPI Write LED OFF</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 sends 0x00 over SPI1</div>
+          <div class="tc-step action">STM32 SPI slave receives → sets PB5 LOW</div>
+          <div class="tc-step validate">ESP32 reads GPIO22 — expects LOW</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-spi">SPI</span><span class="pin-tag tag-gpio">GPIO</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_011</div>
+        <div class="tc-title">PWM Match 100Hz 50%</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 outputs 100Hz 50% on GPIO32</div>
+          <div class="tc-step action">STM32 measures PB4 → reproduces on PB10</div>
+          <div class="tc-step validate">ESP32 GPIO2 captures 100Hz 50% ±10%/5pp</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-pwm">PWM</span></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="tc-pass">PASS</div>
+        <div class="tc-id">TC_DUT3_012</div>
+        <div class="tc-title">PWM Match 200Hz 75%</div>
+        <div class="tc-flow">
+          <div class="tc-step stimulus">ESP32 outputs 200Hz 75% on GPIO32</div>
+          <div class="tc-step action">STM32 measures PB4 → reproduces on PB10</div>
+          <div class="tc-step validate">ESP32 GPIO2 captures 200Hz 75% ±10%/5pp</div>
+        </div>
+        <div class="tc-periph"><span class="pin-tag tag-pwm">PWM</span></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Zephyr HIL Testbench · DUT3 Full Demo · STM32F401CC + ESP32 DevKit · Robot Framework 11/11
+</footer>
+
+</body>
+</html>

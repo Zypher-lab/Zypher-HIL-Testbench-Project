@@ -56,3 +56,5 @@
         zephyr,resolution = <12>;
     };
 };
+
+

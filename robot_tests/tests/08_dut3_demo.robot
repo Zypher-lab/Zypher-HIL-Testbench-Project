@@ -79,17 +79,17 @@ TC_DUT3_007_UART_ECHO_HELLO
 
 # ESP32 SPI (GPIO18/19/23/5) → STM32 SPI1 (PA4/PA5/PA6/PA7)
 
-TC_DUT3_008_SPI_WRITE_LED_ON
-    [Documentation]    Send LED_ON over SPI — transaction must complete OK
-    SPI Write    13    LED_ON
+TC_DUT3_008_SPI_LED_ON
+    [Documentation]    Send LED_ON over SPI → STM32 sets PB5 HIGH → ESP32 reads DIO_IN2 HIGH
+    SPI Write             13    LED_ON
+    Sleep                 0.1
+    Expect GPIO Value     14    DIO_IN2    1    500
 
-TC_DUT3_009_SPI_WRITE_LED_OFF
-    [Documentation]    Send LED_OFF over SPI — transaction must complete OK
-    SPI Write    14    LED_OFF
-
-TC_DUT3_010_SPI_WRITE_FAN_MAX
-    [Documentation]    Send FAN_MAX over SPI — transaction must complete OK
-    SPI Write    15    FAN_MAX
+TC_DUT3_009_SPI_LED_OFF
+    [Documentation]    Send LED_OFF over SPI → STM32 sets PB5 LOW → ESP32 reads DIO_IN2 LOW
+    SPI Write             15    LED_OFF
+    Sleep                 0.1
+    Expect GPIO Value     16    DIO_IN2    0    500
 
 
 # ── PWM Stimulus → DUT Match ───────────────────────────────────────────────────

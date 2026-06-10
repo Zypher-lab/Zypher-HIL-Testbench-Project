@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 int  spi_service_init(void);
 
@@ -11,4 +12,5 @@ bool spi_service_send_expect(const char *tx,
                              char       *out_rx,
                              size_t      out_rx_size);
 bool spi_service_write(const char *tx);
+bool spi_service_write_byte(uint8_t byte);
 #endif

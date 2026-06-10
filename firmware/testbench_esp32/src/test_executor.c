@@ -159,7 +159,15 @@ static void execute_spi_send_expect(const ztb_command_t *command,
 static void execute_spi_write(const ztb_command_t *command,
                               ztb_response_t *response)
 {
-    if (!spi_service_write(command->tx)) {
+    uint8_t byte;
+    if (strcmp(command->tx, "LED_ON") == 0)       byte = 0x01;
+    else if (strcmp(command->tx, "LED_OFF") == 0) byte = 0x00;
+    else {
+        ztb_make_fail_response(response, command->seq, "SPI_UNKNOWN_CMD");
+        return;
+    }
+
+    if (!spi_service_write_byte(byte)) {
         ztb_make_fail_response(response, command->seq, "SPI_WRITE_FAILED");
         return;
     }

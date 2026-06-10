@@ -59,3 +59,17 @@ bool spi_service_write(const char *tx)
 
     return spi_transceive_dt(&spi_dev, &tx_set, &rx_set) == 0;
 }
+
+bool spi_service_write_byte(uint8_t byte)
+{
+    uint8_t tx_buf[1] = { byte };
+    uint8_t rx_buf[1] = { 0 };
+
+    struct spi_buf tx_bufs[] = {{ .buf = tx_buf, .len = 1 }};
+    struct spi_buf rx_bufs[] = {{ .buf = rx_buf, .len = 1 }};
+
+    struct spi_buf_set tx_set = { .buffers = tx_bufs, .count = 1 };
+    struct spi_buf_set rx_set = { .buffers = rx_bufs, .count = 1 };
+
+    return spi_transceive_dt(&spi_dev, &tx_set, &rx_set) == 0;
+}

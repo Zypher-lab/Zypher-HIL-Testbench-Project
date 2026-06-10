@@ -4,9 +4,11 @@
 #include "fan_pwm.h"
 #include "uart_echo.h"
 #include "pwm_match.h"
+#include "spi_cmd.h"
 
 K_SEM_DEFINE(pwm_match_ready, 0, 1);
 
+K_THREAD_DEFINE(spi_cmd_tid, 1024, spi_cmd_thread, NULL, NULL, NULL, 4, 0, 0);
 K_THREAD_DEFINE(pwm_match_tid, 2048,
                 pwm_match_thread, NULL, NULL, NULL,
                 5, 0, 0);
@@ -27,6 +29,11 @@ int main(void)
 
     if (uart_echo_init() != 0) {
         printk("uart_echo init failed\n");
+        return 0;
+    }
+
+    if (spi_cmd_init() != 0) {
+        printk("spi_cmd init failed\n");
         return 0;
     }
 

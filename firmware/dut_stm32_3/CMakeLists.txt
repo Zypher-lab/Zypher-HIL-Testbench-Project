@@ -8,6 +8,7 @@ target_sources(app PRIVATE
     src/fan_pwm.c
     src/uart_echo.c
     src/pwm_match.c
+    src/spi_cmd.c
 )
 
 target_include_directories(app PRIVATE src)

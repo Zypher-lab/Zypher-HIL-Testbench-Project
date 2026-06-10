@@ -59,7 +59,7 @@
     spi_dev0: spi_dev@0 {
         compatible = "vnd,spi-device";
         reg = <0>;
-        spi-max-frequency = <100000>;
+        spi-max-frequency = <500000>;
     };
 
 };
